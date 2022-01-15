@@ -49,9 +49,9 @@ var Framer = {
             var dy2 = parseInt(this.scene.cy + y2);
 
             var gradient = this.context.createLinearGradient(dx1, dy1, dx2, dy2);
-            gradient.addColorStop(0, '#FE4365');
-            gradient.addColorStop(0.6, '#FE4365');
-            gradient.addColorStop(1, '#F5F5F5');
+            gradient.addColorStop(0, '#67C947');
+            gradient.addColorStop(0.6, '#67C947');
+            gradient.addColorStop(1, '#A947C9');
             this.context.beginPath();
             this.context.strokeStyle = gradient;
             this.context.lineWidth = 2;
@@ -67,7 +67,7 @@ var Framer = {
         drawEdging: function () {
             this.context.save();
             this.context.beginPath();
-            this.context.strokeStyle = 'rgba(254, 67, 101, 0.5)';
+            this.context.strokeStyle = 'rgba(169, 71, 201, 1)';
             this.context.lineWidth = 1;
 
             var offset = Tracker.lineWidth / 2;
@@ -225,7 +225,7 @@ var Framer = {
 
         drawArc: function () {
             this.context.save();
-            this.context.strokeStyle = 'rgba(254, 67, 101, 0.8)';
+            this.context.strokeStyle = 'rgba(103, 201, 71, 0.8)';
             this.context.beginPath();
             this.context.lineWidth = this.lineWidth;
 
@@ -308,7 +308,7 @@ var Framer = {
         canvasConfigure: function () {
             this.canvas = document.querySelector('canvas');
             this.context = this.canvas.getContext('2d');
-            this.context.strokeStyle = '#FE4365';
+            this.context.strokeStyle = '#67C947';
             this.calculateSize();
         },
 
@@ -475,7 +475,7 @@ var Framer = {
         drawPic: function () {
             this.context.save();
             this.context.beginPath();
-            this.context.fillStyle = 'rgba(254, 67, 101, 0.85)';
+            this.context.fillStyle = 'rgba(103, 201, 71, 0.85)';
             this.context.lineWidth = 1;
             var x = Tracker.r / Math.sqrt(Math.pow(Math.tan(Tracker.angle), 2) + 1);
             var y = Math.sqrt(Tracker.r * Tracker.r - x * x);
