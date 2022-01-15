@@ -291,7 +291,31 @@ class Gor_El(models.Manager):
             plaintext = self.crypt.AesDecryptEAX(encryptedFile, CryptoTools().Sha256(keyToFile))
             return plaintext
 
+        else:
+            print("DEBUG>PATH:" + str(os.path.join(otherFS.base_location, str(f.image_file.name))))
+            encryptedFile = open('/' + os.path.join(otherFS.base_location, str(f.image_file.name)), 'rb').read()
+            data_kek: KEK = f.data_kek
+
+            data_dek: DEK = f.data_dek
+
+            # We've got the dek and kek attached to the image file so now to do the decryption
+            if isinstance(f.result_nonce_file, str):
+                wrapped_nonce = (f.result_nonce_file).encode('latin1').decode('unicode-escape').encode('latin1')
+                wrapped_nonce = wrapped_nonce[2:-1]
+                wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
+                self.crypt.nonce = b64decode(wrapped_nonce)
+            else:
+                self.crypt.nonce = b64decode(f.data_dek.result_nonce_file)
+
+            keyToFile = data_dek.unwrap_key(data_kek, password.encode())
+
+            self.crypt.nonce = b64decode(wrapped_nonce)
+            plaintext = self.crypt.AesDecryptEAX(encryptedFile, CryptoTools().Sha256(keyToFile))
+            return plaintext
+
         return plaintext
+
+
 
 
 class Tag(models.Model):
@@ -418,9 +442,6 @@ class MusicFile(models.Model):
     def natural_key(self):
         return (self.image_file,)
 
-    def natural_key(self):
-        return (self.image_file,)
-
 
 class ImageFile(models.Model):
     """
@@ -520,9 +541,6 @@ class MiscFile(models.Model):
     def get_update_url(self):
         return reverse('organizer_upload_create', kwargs={
             'image_file': self.image_file})
-
-    def natural_key(self):
-        return (self.image_file,)
 
     def natural_key(self):
         return (self.image_file,)

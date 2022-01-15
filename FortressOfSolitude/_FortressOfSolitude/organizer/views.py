@@ -95,10 +95,27 @@ class DownloadView(View):
             elif (not isinstance(unwrapThis, MusicFile)) and ('application/mp3' in self.get_mimetype()):
                 print("This is a MusicFile object")
                 unwrapThis = MusicFile(unwrapThis)
+            elif (not isinstance(unwrapThis, MiscFile)) and ('*/*' in self.get_mimetype()):
+                unwrapThis = MiscFile(unwrapThis)
 
             response.write(handle_downloaded_file(unwrapThis, request))
 
         return response
+
+
+class DownloadTheMescalineView(SingleObjectMixin, DownloadView):
+    model = MiscFile
+
+    use_xsendfile = False
+    mimetype = '*/*'
+
+    def get_contents(self):
+        return self.get_object()
+
+    def get_filename(self):
+        print(str(self.get_object().image_file).split('.')[0])
+        return str(self.get_object().image_file).split('.')[0]
+
 
 class DownloadTheMusicalGoodsView(SingleObjectMixin, DownloadView):
     model = MusicFile
@@ -112,6 +129,7 @@ class DownloadTheMusicalGoodsView(SingleObjectMixin, DownloadView):
     def get_filename(self):
         print(str(self.get_object().image_file).split('.')[0])
         return str(self.get_object().image_file).split('.')[0]
+
 
 class DownloadTheGoodsView(SingleObjectMixin, DownloadView):
     model = ImageFile
@@ -188,9 +206,18 @@ class DownloadImageList(ListView):
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+
 class DownloadMusicList(ListView):
     model = MusicFile
     template_name = 'organizer/musicfile_list.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DownloadMiscList(ListView):
+    model = MiscFile
+    template_name = 'organizer/miscfile_list.html'
 
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
@@ -316,25 +343,26 @@ class UploadFile(FormView):  # CreateView
         return super().dispatch(request, *args, **kwargs)
 
 
-
 def handle_misc_uploaded_file(f: MiscFile, request):
     if not isinstance(f, MiscFile):
         print("unable to encrypt file due to something happened and not a MiscFile type")
         return
 
     if (request.user != None):
-        encryptedObj = MusicFile.objects._encrypt_data(str(request.user.password), image_file=f, request=request)
+        encryptedObj = MiscFile.objects._encrypt_data(str(request.user.password), image_file=f, request=request)
 
         return encryptedObj
+
 
 def handle_music_uploaded_file(f: MusicFile, request):
     if not isinstance(f, MusicFile):
         print("unable to encrypt file due to the file is not a supported MusicFile")
         return
-    if(request.user != None):
+    if (request.user != None):
         encryptedObj = MusicFile.objects._encrypt_data(str(request.user.password), image_file=f, request=request)
 
         return encryptedObj
+
 
 def handle_image_uploaded_file(f: ImageFile, request):
     if not isinstance(f, ImageFile):
@@ -388,4 +416,3 @@ def handle_downloaded_file(f, request, i=0, total_work=100):
         print("This is the answer to the question you asked: ")
         print(ans)
         return ans
-
