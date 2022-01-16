@@ -1,3 +1,6 @@
+// DBA 1337_TECH, AUSTIN TEXAS © MAY 2022
+// Proof of Concept code, No liabilities or warranties expressed or implied.
+
 var Framer = {
 
         countTicks: 360,
