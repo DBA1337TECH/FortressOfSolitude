@@ -11,6 +11,7 @@ from django.template import (
 
 register = Library()
 
+
 @register.simple_tag(name='getSecureNote', takes_context=True)
 def getSecureNote(context, secure_note):
     secure_note = context['object']
@@ -18,11 +19,13 @@ def getSecureNote(context, secure_note):
     gor_el = Gor_El()
     return gor_el._decrypt_text(secure_note, request)
 
+
 @register.filter(name='decrypt_text', takes_context=True)
 def decrypt_text(secure_note, context):
     gor_el = Gor_El()
     secure_text = context['secureddataatrestpost']
     return gor_el._decrypt_text(secure_text, context)
+
 
 @register.inclusion_tag(
     'core/includes/downloads.html',

@@ -16,11 +16,11 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background:  #FFFFFF !important;
+            background:  radial-gradient(#2f9d2a, #43ff48) !important;
             overflow: hidden;
             margin: 0;
             padding: 0;
-            border: 4px solid #0FFFFF;
+            border: 4px solid #279a2b;
             border-radius: 4px;
         }
         nav a {
@@ -30,7 +30,7 @@
         }
 
             nav a:hover {
-                background-color: #820000;
+                background-color: #3df25a;
 
             }
 
@@ -41,11 +41,11 @@
             right: 0;
             height: 100%;
             width: 121px;
-            background:  linear-gradient(to top,#276CE8, white) !important;
+            background:  radial-gradient(#2f9d2a, #43ff48) !important;
             overflow: hidden;
             margin: 40px 0px 0px 0px;
             padding: 0px;
-            border: 3px solid #75A1F1;
+            border: 3px solid #2eb232;
             border-radius: 5px;
 
             }
@@ -53,11 +53,12 @@
                     float: left;
                     text-decoration: none;
                     padding: 5px 5px;
+                    font-family: 'Bangers', cursive;
 
 
                 }
              ul.stayClassySanDiego li a:hover {
-                    background-color: #194595;
+                    background-color: #30bf47;
                     width: 100%;
                     border-radius: 7px;
                 }
@@ -66,7 +67,7 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: cornflowerblue;
+            background: radial-gradient(cornflowerblue, #0ed1ef);
             border: 4px solid forestgreen;
             border-radius: 5px;
 
@@ -77,6 +78,9 @@
     <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/loginformstyle.css' %}">
 
 </head>
@@ -95,13 +99,13 @@
                             <img src="{% static "img/fortressOfSolitude.png" %}" alt="Do_You_Have_The_Strength?" width="121" height="75" />
                         </a>
                         <a class="navbar-item" text-align="center" href="{% url 'organizer_upload_create' %}">
-                           <h1 align="center"><font color="grey">Fortress of Solitude</font></h1>
+                           <h1 align="center" style="font-family:'Bangers', cursive; color:#0a0a0a;">Fortress of Solitude</h1>
                         </a>
 
-                       <a href="{% url 'organizer_tag_list' %}"><h1><font color="grey">    Tag List   </font> </h1></a>
+                       <a href="{% url 'organizer_tag_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;">    Tag List    </h1></a>
 
-                        <a href="{% url 'organizer_tasking_list' %}"><h1><font color="grey">   Tasking List   </font> </h1></a>
-                         <a href="{% url 'blog_post_list' %}"><h1><font color="grey">   Blog   </font> </h1></a>
+                        <a href="{% url 'organizer_tasking_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;">   Tasking List </h1></a>
+                         <a href="{% url 'blog_post_list' %}" ><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;">   Blog   </h1></a>
                 </nav>
             </div>
 
@@ -170,7 +174,7 @@
 		<div class="soundControl"></div>
 		<div class="time">00:00</div>
 	</div>
-   <script>const music_file = "{% static 'img/Get_Back.m4a' %}";</script>
+   <script>const music_file = "{% static 'img/Ante_Up.m4a' %}";</script>
     <script id="rendered-js" src="{% static 'js/music_player.js' %}"></script>
     <div ><!-- container-->
         <footer class="bottomFooter" style="overflow:hidden;" >
@@ -181,9 +185,9 @@
                 <path d="M0,10 c80,-18 230,-12 350,7 c80,13 260,17 350,-5 v25 h-700z" fill="#00273F" />
             </svg>
             <p align="center" style="z-index:1;">
-                &copy; 2022
-                <a href="TBD.com"> LEET_TECH </a>
-                <img src="{% static 'img/riddler.jpg' %}" width="80" height="50" style="border-radius: 10px;" />
+                &copy; 2020
+                <a href="https://1337t3c4.com"> LEET_TECH est. 2022 </a>
+                <img src="{% static 'img/NuclearAdjusted.png' %}" width="80" height="50" style="border-radius: 10px;" />
             </p>
 
         </footer>

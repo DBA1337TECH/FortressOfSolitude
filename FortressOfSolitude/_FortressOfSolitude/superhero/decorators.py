@@ -11,6 +11,7 @@ from django.utils.decorators import \
     method_decorator
 from django.views.generic import View
 
+
 def class_login_required(cls):
     if (not isinstance(cls, type)
             or not issubclass(cls, View)):
@@ -22,8 +23,8 @@ def class_login_required(cls):
     cls.dispatch = decorator(cls.dispatch)
     return cls
 
-def require_authenticated_permission(permission):
 
+def require_authenticated_permission(permission):
     def decorator(cls):
         if (not isinstance(cls, type)
                 or not issubclass(cls, View)):
