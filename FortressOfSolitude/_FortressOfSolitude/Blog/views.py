@@ -18,7 +18,6 @@ from .utils import (
 
 
 # Create your views here.
-
 def greeting(request):
     return HttpResponse('Welcome to 1337_Tech Blog')
 
@@ -28,18 +27,21 @@ def greeting(request):
 class PostDetail(PostGetMixin, DetailView):
     model = Post
 
-
+@require_authenticated_permission(
+    'Blog.add_post')
 class PostUpdate(UpdateView):
     form_class = PostForm
     model = Post
 
-
+@require_authenticated_permission(
+    'Blog.add_post')
 class SecurePostUpdate(PostFormValidMixin, UpdateView):
     form_class = SecurePostForm
     model = SecureDataAtRestPost
-    template_name = 'Blog/securedataatrestpost_form_update.html'
+    template_name = 'Blog/secureNote_form_update.html'
 
-
+@require_authenticated_permission(
+    'Blog.delete_post')
 class PostDelete(PostGetMixin, DeleteView):
     model = Post
     success_url = reverse_lazy('blog_post_list')
@@ -50,7 +52,7 @@ class PostDelete(PostGetMixin, DeleteView):
 class SecurePostDelete(SecurePostGetMixin, DeleteView):
     date_field = 'pub_date'
     model = SecureDataAtRestPost
-    # template_name = 'blog/securedataatrestpost_confirm_delete.html'
+    # template_name = 'blog/secureNote_confirm_delete.html'
     queryset = (
         SecureDataAtRestPost.objects
             .select_related('author')

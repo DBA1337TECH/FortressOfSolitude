@@ -55,7 +55,7 @@ def download_list(request):
 #    else:
 #        raise Http404
 #    return handle_downloaded_file(file, request)
-
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadView(View):
     mimetype = None
     extension = None
@@ -117,6 +117,7 @@ class DownloadTheMescalineView(SingleObjectMixin, DownloadView):
         return str(self.get_object().image_file).split('.')[0]
 
 
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadTheMusicalGoodsView(SingleObjectMixin, DownloadView):
     model = MusicFile
 
@@ -131,6 +132,7 @@ class DownloadTheMusicalGoodsView(SingleObjectMixin, DownloadView):
         return str(self.get_object().image_file).split('.')[0]
 
 
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadTheGoodsView(SingleObjectMixin, DownloadView):
     model = ImageFile
 
@@ -143,7 +145,7 @@ class DownloadTheGoodsView(SingleObjectMixin, DownloadView):
     def get_filename(self):
         return str(self.get_object().image_file).split('.')[0]
 
-
+@require_authenticated_permission('organizer.view_tag')
 class TagList(ListView):
     model = Tag
     template_name = 'organizer/tag_list.html'
@@ -195,7 +197,7 @@ def in_contrib_group(user):
     else:
         raise PermissionDenied
 
-
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadImageList(ListView):
     model = ImageFile
     template_name = 'organizer/imagefile_list.html'
@@ -207,6 +209,7 @@ class DownloadImageList(ListView):
         return super().dispatch(request, *args, **kwargs)
 
 
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadMusicList(ListView):
     model = MusicFile
     template_name = 'organizer/musicfile_list.html'
@@ -215,6 +218,7 @@ class DownloadMusicList(ListView):
         return super().dispatch(request, *args, **kwargs)
 
 
+@require_authenticated_permission('organizer.view_tasking')
 class DownloadMiscList(ListView):
     model = MiscFile
     template_name = 'organizer/miscfile_list.html'
@@ -302,9 +306,10 @@ class UploadFile(FormView):  # CreateView
     def post(self, request, *args, **kwargs):
         self.object = None
         form = self.form_class(request)
-        file = request.FILES.getlist('file_field')
+        file = request.FILES.getlist('file')
         filez = request.FILES.getlist('file_field')
         total_work = len(filez)
+        print(f"Number of Files uploaded: {total_work}")
         i = 0
         if form.is_valid:
             for f in filez:
@@ -414,5 +419,11 @@ def handle_downloaded_file(f, request, i=0, total_work=100):
         ans = AskMeAQuestionAndIShallAnswer._decrypt_data(str(request.user.password), request=request, image_file=f)
 
         print("This is the answer to the question you asked: ")
-        print(ans)
+        if not isinstance(ans, bytes):
+            print("I cannot tell you the answer, for you are not Kal-El")
+
+        else:
+            print("The answer to the question is quite a compliated one I hope you are ready for the byte sized version"
+                  "\n\n")
+            print(ans)
         return ans

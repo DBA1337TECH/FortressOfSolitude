@@ -36,6 +36,11 @@ urlpatterns = [
         r'(?P<slug>[\w\-]+)/$',
         SecurePostDetail.as_view(),
         name='blog_securepost_detail'),
+    url(r'^SecureNote/(?P<year>\d{4})/'
+        r'(?P<month>\d{1,2})/'
+        r'(?P<slug>[\w\-]+)/$',
+        SecurePostUpdate.as_view(),
+        name='blog_secureNote_form_update'),
     url(r'^SecureNote/'
         r'(?P<year>\d{4})/'
         r'(?P<month>\d{1,2})/'

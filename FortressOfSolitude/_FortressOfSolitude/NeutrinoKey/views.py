@@ -15,6 +15,8 @@ from .forms import DownloadFileForm
 
 
 # Create your views here.
+@require_authenticated_permission(
+    'Blog.view_post')
 class DownloadFile(ListView):
     form_class = DownloadFileForm
     template_name = 'organizer/download.html'
@@ -35,3 +37,5 @@ class DownloadFile(ListView):
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
+
+

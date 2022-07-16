@@ -147,8 +147,10 @@ class Librarian(models.Manager):
         print(f"data.image_file.name {model_data.image_file.name}")
         data.result_nonce_file = nonce
         data.save()
-        data.data_kek = data_kek
-        data.data_dek = data_dek
+        data_dek.save()
+        data_kek.save()
+        data.data_kek.add(data_kek)
+        data.data_dek.add(data_dek)
         print("ENCRYPTED AND SAVED DATA")
         data.save()
 

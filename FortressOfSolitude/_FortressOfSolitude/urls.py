@@ -27,6 +27,7 @@ from _FortressOfSolitude.Blog import urls as blog_urls
 from _FortressOfSolitude.Blog.views import PostList
 from _FortressOfSolitude.organizer import urls as organizer_urls
 from _FortressOfSolitude.superhero import urls as superhero_urls
+# from FortressOfSolitude._FortressOfSolitude.superhero.views import my_500_error_view
 
 urlpatterns = [
     # Uncomment the next line to enable the admin:

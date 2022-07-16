@@ -8,7 +8,9 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import RedirectView
 
+
 # TODO: Create a RegisterCreate View
+
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(pattern_name='dj-auth:login', permanent=False)),
@@ -19,3 +21,5 @@ urlpatterns = [
     # url(r'^register/$', RegisterCreate.as_view(), name='register_create'),
 
 ]
+
+# handler500 = my_500_error_view
