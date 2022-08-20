@@ -104,7 +104,6 @@ class CryptoTools:
     '''
 
     def AesDecryptEAX(self, cipherdata, key):
-        print(b'AES-Decrypt:' + self.nonce)
         self.cipher = AES.new(key, AES.MODE_EAX, nonce=self.nonce)
         self.nonce = self.cipher.nonce
         self.mode = AES.MODE_EAX

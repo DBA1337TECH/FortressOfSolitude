@@ -421,9 +421,11 @@ def handle_downloaded_file(f, request, i=0, total_work=100):
         print("This is the answer to the question you asked: ")
         if not isinstance(ans, bytes):
             print("I cannot tell you the answer, for you are not Kal-El")
+            print("ommited for you sanity's sake, as no human on Earth can comprehend,"
+                  "as you must be Kryptonian to understand the depths of our knowledge"
+                  )
 
         else:
-            print("The answer to the question is quite a compliated one I hope you are ready for the byte sized version"
-                  "\n\n")
-            print(ans)
+            print("Successfully decrypted and the answer should have revealed itself")
+
         return ans

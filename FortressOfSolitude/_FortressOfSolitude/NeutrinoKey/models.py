@@ -31,7 +31,6 @@ class KeyMold(models.Manager):
 
     def _create_kek(request, **kwargs):
         pwd = request.user.password
-        # print("deriving kek")
         self.kek = DeriveKek_default(pwd)
         return self.kek
 
@@ -109,7 +108,6 @@ class KEK(models.Model):
                 self.crypto.nonce = b64decode(result_wrapped_nonce)
             else:
                 self.crypto.nonce = b64decode(self.result_wrapped_nonce)
-            # print("wrappedKek: " + self.result_wrapped_kek)
             if isinstance(self.result_wrapped_kek, str):
                 result_wrapped_kek = (self.result_wrapped_kek.encode()).replace(b"b'", b'')
 
@@ -126,7 +124,7 @@ class KEK(models.Model):
                 self.crypto.nonce = b64decode(self.result_wrapped_nonce)
                 if not isinstance(password, bytes):
                     password = password.encode()
-                self.kek = self.crypto.AesDecryptEAX(b64decode(self.result_wrapped_kek), self.crypto.Sha256(password))
+                self.kek = self.crypto.AesDecryptEAX(b64decode(self.result_wrapped_kek), CryptoTools().Sha256(password))
                 self.wrappedKek = None
             except:
                 print('someone has attempted to spoof the KEK (key encryption key)')
@@ -146,9 +144,7 @@ class KEK(models.Model):
             self.kek = None
         elif self.kek != None:
             try:
-                # print("ATTEMPTING WRAPPING KEK")
                 self.crypto.nonce = b64decode(self.result_wrapped_nonce)
-                # print("set nonce")
                 if isinstance(password, bytes):
                     self.wrappedKek = b64encode(self.crypto.AesEncryptEAX(self.kek, self.crypto.Sha256(password)))
                 else:
@@ -157,7 +153,6 @@ class KEK(models.Model):
 
                 self.kek = None
             except OSError as ERROR:
-                print(ERROR)
                 print('Wrapping KEK (key encryption key) was unsuccessful')
 
         return self.wrappedKek
@@ -191,7 +186,6 @@ class DEK(models.Model):
         if isinstance(kek, KEK) and isinstance(password, str):
             kek.unwrap_key(password)
             self.crypto.nonce = b64decode(kek.result_wrapped_nonce)
-            # print(self.result_wrappedDek)
             self.dek = self.crypto.AesEncryptEAX(b64decode(self.result_wrappedDek), kek.kek)
             kek.wrap_key(password)
             return self.dek
@@ -228,37 +222,29 @@ class DEK(models.Model):
             return self.dek
 
         elif isinstance(kek, KEK) and isinstance(password, bytes):
-            kek.unwrap_key(password)
+            unwrapped_kek = kek.unwrap_key(password)
 
             if isinstance(self.result_wrapped_nonce, str):
-                print("NONCEDEK_STR:" + self.result_wrapped_nonce)
                 result_wrapped_nonce = (self.result_wrapped_nonce.encode()).replace(b"b'", b'')
                 result_wrapped_nonce = result_wrapped_nonce[:-1]
                 result_wrapped_nonce = result_wrapped_nonce + b'=' * (len(result_wrapped_nonce) % 4)
                 self.crypto.nonce = b64decode(result_wrapped_nonce)
-                print(b'NONCEDEK>' + result_wrapped_nonce)
 
             elif isinstance(self.result_wrapped_nonce, bytes):
-                print("YOLO")
                 self.crypto.nonce = b64decode(self.result_wrapped_nonce)
 
             if (not isinstance(self.result_wrappedDek, bytes)):
-                print("did we make it here" + str(self.result_wrappedDek))
                 result_wrappedDek = (self.result_wrappedDek.encode()).replace(b"b'", b'')
                 result_wrappedDek = result_wrappedDek[:-1]
-                print("did we make it here" + str(result_wrappedDek))
                 wrapper = result_wrappedDek + b'=' * (len(result_wrappedDek) % 4)
-                print("wrapper" + str(wrapper))
 
             else:
-                print(self.result_wrappedDek)
                 result_wrappedDek = self.result_wrappedDek.replace(b"b'", b'')
                 result_wrappedDek = result_wrappedDek
                 wrapper = result_wrappedDek + b'=' * (len(result_wrappedDek) % 4)
 
             cryptoObj = CryptoTools()
-            print(wrapper)
-            self.dek = self.crypto.AesDecryptEAX(b64decode(wrapper), cryptoObj.Sha256(kek.kek))
+            self.dek = self.crypto.AesDecryptEAX(b64decode(wrapper), cryptoObj.Sha256(unwrapped_kek))
             kek.wrap_key(password)
 
             return self.dek
@@ -272,7 +258,6 @@ class DEK(models.Model):
 
                 kek.unwrap_key(password)
                 self.crypto.nonce = b64decode(self.result_wrapped_nonce)
-                # print("about to decrypt dek")
                 self.dek = self.crypto.AesDecryptEAX(b64decode(self.result_wrappedDek), self.crypto.Sha256(kek.kek))
 
                 kek.wrap_key(password)
@@ -391,7 +376,6 @@ class NeutronMatterCollector(models.Model):
                                           related_name='kek_for_dek_generator')  # length of 32 bytes (256bits) in base64 is 44, but will need to include an = ending and null so extending to 45.
 
     try:
-        # print(get_user_model().user)
         kekForDek = models.ForeignKey(
             KEK, related_name='KEK_obj',
             on_delete=models.CASCADE, default=1)
@@ -409,7 +393,6 @@ class NeutronMatterCollector(models.Model):
 
         except:
             print("unable to create KEK")
-            print(get_user_model().natural_key(get_user_model()))
 
     time_generated = models.DateTimeField('date integrated', auto_now_add=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -445,9 +428,6 @@ class NeutronMatterCollector(models.Model):
                     # Generate DEK based off this formula sha256(256 bit SALT + KEK)
                     self.SALT = crypto.RandomNumber(32)
                     crypto.nonce = b64decode(self.kekForDek.result_wrapped_nonce)
-                    # print(self.kekForDek.result_wrapped_nonce)
-                    # print(self.kekForDek.result_wrapped_kek)
-                    # print(password)
                     DerivedDek = crypto.Sha256(
                         bytes(self.SALT) + crypto.AesDecryptEAX(b64decode(self.kekForDek.result_wrapped_kek),
                                                                 crypto.Sha256(bytes(password.encode()))))

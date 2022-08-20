@@ -104,7 +104,6 @@ class CryptoTools:
     '''
 
     def AesDecryptEAX(self, cipherdata, key):
-        print(b'AES-Decrypt:' + self.nonce)
         self.cipher = AES.new(key, AES.MODE_EAX, nonce=self.nonce)
         self.nonce = self.cipher.nonce
         self.mode = AES.MODE_EAX
@@ -168,7 +167,6 @@ class CryptoTools:
                 if chunkEnd > endpoint:
                     chunkEnd = endpoint
                 chunk = plaintext[start:chunkEnd]
-                print('DEBUG: length of chunk: ' + str(len(chunk)))
                 start = chunkEnd
                 ciphertext += self.cipher.encrypt(chunk)
             else:
@@ -208,7 +206,6 @@ class CryptoTools:
                     chunk = cipherText[start:chunkEnd]
                 else:
                     chunk = cipherText[start:chunkEnd]
-                    print(me + 'DEBUG> length of start: ' + str(start))
 
                 start = chunkEnd
                 plaintext += self.cipher.decrypt(chunk)
