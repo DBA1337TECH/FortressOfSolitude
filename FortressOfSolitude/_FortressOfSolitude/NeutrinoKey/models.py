@@ -446,7 +446,7 @@ class NeutronMatterCollector(models.Model):
                     # self.time_generated = models.DateTimeField('date integrated', auto_now_add=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                     self.save()
                     newDek.save()
-                    self.dekgenerator.add(newDek)
+                    self.dekgenerator.set((newDek.dek,))
                     self.save()
                     return newDek
 
