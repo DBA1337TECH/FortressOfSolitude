@@ -7,6 +7,7 @@ from django.conf.urls import url
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.forms import AuthenticationForm
 from django.views.generic import RedirectView
+from FortressOfSolitude._FortressOfSolitude.superhero.views import RegisterCreate
 
 
 # TODO: Create a RegisterCreate View

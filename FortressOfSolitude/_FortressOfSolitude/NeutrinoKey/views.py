@@ -15,6 +15,9 @@ from .forms import DownloadFileForm
 
 
 # Create your views here.
+
+
+
 @require_authenticated_permission(
     'Blog.view_post')
 class DownloadFile(ListView):
