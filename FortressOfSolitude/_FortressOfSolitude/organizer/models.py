@@ -16,7 +16,8 @@ from django.utils import timezone
 
 import _FortressOfSolitude.settings as settings
 from _FortressOfSolitude.NeutrinoKey.cryptoutils import CryptoTools
-from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore
+from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore, DeriveDek_default, \
+    DeriveDek_from_Kek
 
 # Create your models here.
 
@@ -84,6 +85,39 @@ class Librarian(models.Manager):
         data_dek.save()
         post.data_dek.add(data_dek)
         post.data_kek.add(data_kek)
+        print("SECURED A NOTE: ENCRYPTED Sending off to Save")
+
+        post.save()
+
+        return post
+
+    def _encrypt_Daily_Planet_Note(self, password, **kwargs):
+        modeldata = kwargs.pop('secure_text', False)
+
+        req = kwargs.pop('request', False)
+        post = kwargs.pop('postobj', False)
+
+        data_kek = NeutronCore().DeriveKek(settings.DAILY_PLANET_AES_DEK)
+        # data_dek = NeutronMatterCollector().DeriveDek(settings.DAILY_PLANET_AES_DEK)
+        # data_dek = DeriveDek_default(settings.DAILY_PLANET_AES_DEK)
+        data_dek = DeriveDek_from_Kek(data_kek, settings.DAILY_PLANET_AES_DEK)
+        nonce = data_kek.result_wrapped_nonce
+        Librarian.crypt.nonce = b64decode(nonce)
+        if not isinstance(password, bytes):
+            password = password.encode()
+        key = data_kek.unwrap_key(settings.DAILY_PLANET_AES_DEK)
+
+        if isinstance(modeldata, str):
+            modeldata = modeldata.encode()
+        encrypted_data = Librarian.crypt.AesEncryptEAX(modeldata, DEK.crypto.Sha256(key))
+
+        post.secure_text = encrypted_data
+        post.save()
+        data_kek.save()
+        data_dek.save()
+        post.data_kek.add(data_kek)
+        post.data_dek.add(data_dek)
+
         print("SECURED A NOTE: ENCRYPTED Sending off to Save")
 
         post.save()
@@ -239,7 +273,11 @@ class Gor_El(models.Manager):
             ciphertext = ciphertext.encode()
 
         data_dek = secureNote.data_dek.get(id=secureNote.data_dek.get().id)
-        keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), request.user.password.encode())
+        if str(request.user) is "AnonymousUser":
+            password = settings.DAILY_PLANET_AES_DEK
+        else:
+            password = request.user.password.encode()
+        keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), password)
 
         hash = CryptoTools()
         plaintext = self.crypt.AesDecryptEAX(ciphertext, hash.Sha256(keyToFile))

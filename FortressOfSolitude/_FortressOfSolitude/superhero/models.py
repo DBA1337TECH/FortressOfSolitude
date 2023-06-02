@@ -18,7 +18,7 @@ from django.contrib.auth.models import (
 from django.urls import reverse
 from django.db import models
 from django.db.models import QuerySet
-
+from PIL import Image
 
 class ProfileManager(models.Manager):
 
@@ -27,6 +27,11 @@ class ProfileManager(models.Manager):
 
 
 class Profile(models.Model):
+    avatar = models.ImageField(
+        default='avatar.png',  # default avatar
+        upload_to='profile_avatars' # dir to store the image
+    )
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE)
@@ -56,12 +61,46 @@ class Profile(models.Model):
     def natural_key(self):
         return (self.slug,)
 
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
+    def save(self, *args, **kwargs):
+        # save the profile first
+        super().save(*args, **kwargs)
+
+        # resize the image
+        img = Image.open(self.avatar.path)
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            # create a thumbnail
+            img.thumbnail(output_size)
+            # overwrite the larger image
+            img.save(self.avatar.path)
+
     natural_key.dependencies = ['user.user']
 
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
+    def _create_writer(self,
+                       email,
+                       password,
+                       **kwargs):
+        email = self.normalize_email(email)
+        is_staff = kwargs.pop('is_staff', True)
+        is_superuser = kwargs.pop(
+            'is_superuser', False)
+        user = self.model(
+            email=email,
+            is_active=True,
+            is_staff=is_staff,
+            is_superuser=is_superuser,
+            **kwargs)
+        user.set_password(password)
+        user.groups.set('DailyPlanet_Writer')
+        user.save(using='default')  # change to superheros for a different database
+        return user
     def _create_user(
             self, email, password, **kwargs):
         email = self.normalize_email(email)
@@ -75,6 +114,7 @@ class UserManager(BaseUserManager):
             is_superuser=is_superuser,
             **kwargs)
         user.set_password(password)
+        user.groups.set('DailyPlanet_Writer') # DailyPlanetReader
         user.save(using='default')  # change to superheros for a different database
         return user
 

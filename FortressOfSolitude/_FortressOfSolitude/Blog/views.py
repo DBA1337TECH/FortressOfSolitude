@@ -239,6 +239,7 @@ class SecurePostArchiveYear(
     paginate_by = 5
     template_name = 'Blog/secureNote_archive_year.html'
 
+
 class PublicSecurePostArchiveYear(
     AllowFuturePermissionMixin,
     YearArchiveView):
@@ -251,8 +252,7 @@ class PublicSecurePostArchiveYear(
     template_name = 'Blog/public_secureNote_archive_year.html'
 
 
-@require_authenticated_permission(
-    'Blog.view_post')
+
 class SecurePostArchiveMonth(
     AllowFuturePermissionMixin,
     MonthArchiveView):

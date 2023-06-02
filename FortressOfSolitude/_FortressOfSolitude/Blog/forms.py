@@ -74,12 +74,13 @@ class PublicSecurePostForm(forms.ModelForm):
             if self.instance.pk != None:
                 x = self.instance.pk
                 print("about to edit the Daily Planet Secure Article")
-                post = post.__class__.objects._encrypt_update_Secure_Note(password=request.user.password,
+                post = post.__class__.objects._encrypt_Daily_Planet_Note(password=request.user.password,
                                                                           secure_text=post.secure_text, postobj=post,
                                                                           request=request)
                 print("We just Edited the Daily Planet Secure Article")
             else:
-                post = post.__class__.objects._encrypt_Secure_Note(password=request.user.password,
+                print("about to encrypt a Daily Planet Secure Article")
+                post = post.__class__.objects._encrypt_Daily_Planet_Note(password=request.user.password,
                                                                    secure_text=post.secure_text, postobj=post,
                                                                    request=request)
         return post

@@ -559,3 +559,8 @@ body {
   left: 25px;
   top: -10px;
 }
+
+.smooth{
+    border-radius: 50%
+
+}

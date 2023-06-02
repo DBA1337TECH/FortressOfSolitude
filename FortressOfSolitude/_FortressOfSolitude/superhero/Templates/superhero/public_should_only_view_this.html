@@ -1,0 +1,12 @@
+{% extends parent_template|default:"superhero/base_superhero.html" %}
+{% load static %}
+
+{% block title %}
+{{block.super}} - Welcome to the Daily Planet
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'blog_securepost_public_list' %}">
+    <img class="smooth" src="{% static 'img/riddler.jpg' %}" alt="can't view this" />
+</a>
+{% endblock %}

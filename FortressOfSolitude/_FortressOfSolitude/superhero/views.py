@@ -6,9 +6,32 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .forms import RegisterForm
+from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import FormView, CreateView
+
+from .forms import DailyPlanetSubscriber
 
 
 # Create your views here.
-class RegisterCreate(RegisterForm):
-    name = "register_create"
+class FreeSubscription(CreateView):
+    form_class = DailyPlanetSubscriber
+    success_url = 'superhero/registersuccess.html'
+    template_name = 'superhero/registration_form.html'
+
+
+class SubscriptionSuccess(View):
+    template_name = 'superhero/registersuccess.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        return render(request, 'superhero/registersuccess.html')
+
+
+# Create your views here.
+def my_500_error_view(request, exception=None):
+    return render(request, 'superhero/nuh_uh_uh.html')
+
+
+def my_403_forbidden_view(request, exception=None):
+    return render(request, 'superhero/public_should_only_view_this.html')
