@@ -277,13 +277,23 @@ class Gor_El(models.Manager):
 
         except Exception as e:
             print(e)
+
+            data_dek = DEK()
+
+            if isinstance(secureNote.secure_text, str):
+                ciphertext = secureNote.secure_text
+                ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
+                ciphertext = ciphertext[2:len(ciphertext) - 1]
+            else:
+                ciphertext = ciphertext.encode()
+
             if str(request.user) is "AnonymousUser":
                 password = settings.DAILY_PLANET_AES_DEK
             else:
                 password = request.user.password.encode()
-            keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), password)
+            keyToFile = settings.DAILY_PLANET_AES_DEK
 
-            hash = CryptoTools()
+        hash = CryptoTools()
 
         plaintext = self.crypt.AesDecryptEAX(ciphertext, hash.Sha256(keyToFile))
 
@@ -359,8 +369,6 @@ class Gor_El(models.Manager):
             return plaintext
 
         return plaintext
-
-
 
 
 class Tag(models.Model):
