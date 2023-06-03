@@ -16,7 +16,7 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background:  radial-gradient(#2f9d2a, #43ff48) !important;
+            background:  radial-gradient(#43ff48, rgb(116, 249, 178)) !important;
             overflow: hidden;
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@
         }
 
             nav a:hover {
-                background-color: #3df25a;
+                background-color: rgb(116, 249, 178);
 
             }
 
@@ -41,7 +41,7 @@
             right: 0;
             height: 100%;
             width: 121px;
-            background:  radial-gradient(#2f9d2a, #43ff48) !important;
+            background:  radial-gradient(#43ff48, rgb(116, 249, 178) ) !important;
             overflow: hidden;
             margin: 40px 0px 0px 0px;
             padding: 0px;
@@ -105,7 +105,7 @@
                        <a href="{% url 'organizer_tag_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;">    Tag List    </h1></a>
 
                         <a href="{% url 'organizer_tasking_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;">   Tasking List </h1></a>
-                         <a href="{% url 'blog_securepost_public_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;"> <img src="{% static 'img/DailyPlanet_Kryptonite.png' %}" alt="The_Daily_Planet?" width="46" height="75" /> </h1></a>
+                         <a href="{% url 'blog_securepost_public_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;"> <img src="{% static 'img/logo/1337_logo_green_bg.png' %}" alt="1337_Blog?" width="75" height="75" style="border-radius:10px"/> </h1></a>
                 </nav>
             </div>
 
@@ -184,10 +184,11 @@
 
                 <path d="M0,10 c80,-18 230,-12 350,7 c80,13 260,17 350,-5 v25 h-700z" fill="#00273F" />
             </svg>
-            <p align="center" style="z-index:1;">
-                &copy; 2022
-                <a href="https://1337t3c4.com"> LEET_TECH est. 2019 </a>
-                <img src="{% static 'img/NuclearAdjusted.png' %}" width="80" height="50" style="border-radius: 10px;" />
+            <p align="center"><a href="https://1337t3c4.com" >
+{#            <p align="center" style="z-index:1;">#}
+{#                &copy; 2022#}
+                <img src="{% static 'img/logo/transparent_1337_tech_logo.png' %}" width="75" height="75" style="border-radius: 10px;" /> </a>
+
             </p>
 
         </footer>

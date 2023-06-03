@@ -257,29 +257,34 @@ class Gor_El(models.Manager):
         data_kek = secureNote.data_kek
 
         # now make sure their in the correct format
-        if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
-            wrapped_nonce = (secureNote.data_dek.get().result_wrapped_nonce.encode()).replace(b"b'", b'')
-            wrapped_nonce = wrapped_nonce.replace(b"'", b'')
-            wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
-            self.crypt.nonce = b64decode(wrapped_nonce)
-        else:
-            self.crypt.nonce = b64decode(secureNote.data_dek.get().result_wrapped_nonce)
+        try:
+            if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
+                wrapped_nonce = (secureNote.data_dek.get().result_wrapped_nonce.encode()).replace(b"b'", b'')
+                wrapped_nonce = wrapped_nonce.replace(b"'", b'')
+                wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
+                self.crypt.nonce = b64decode(wrapped_nonce)
+            else:
+                self.crypt.nonce = b64decode(secureNote.data_dek.get().result_wrapped_nonce)
 
-        if isinstance(secureNote.secure_text, str):
-            ciphertext = secureNote.secure_text
-            ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
-            ciphertext = ciphertext[2:len(ciphertext) - 1]
-        else:
-            ciphertext = ciphertext.encode()
+            if isinstance(secureNote.secure_text, str):
+                ciphertext = secureNote.secure_text
+                ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
+                ciphertext = ciphertext[2:len(ciphertext) - 1]
+            else:
+                ciphertext = ciphertext.encode()
 
-        data_dek = secureNote.data_dek.get(id=secureNote.data_dek.get().id)
-        if str(request.user) is "AnonymousUser":
-            password = settings.DAILY_PLANET_AES_DEK
-        else:
-            password = request.user.password.encode()
-        keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), password)
+            data_dek = secureNote.data_dek.get(id=secureNote.data_dek.get().id)
 
-        hash = CryptoTools()
+        except Exception as e:
+            print(e)
+            if str(request.user) is "AnonymousUser":
+                password = settings.DAILY_PLANET_AES_DEK
+            else:
+                password = request.user.password.encode()
+            keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), password)
+
+            hash = CryptoTools()
+
         plaintext = self.crypt.AesDecryptEAX(ciphertext, hash.Sha256(keyToFile))
 
         return plaintext
