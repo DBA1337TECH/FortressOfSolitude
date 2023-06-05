@@ -13,7 +13,10 @@
     <link href="//fonts.googleapis.com/css?family=Lobster&subset=latin,latin-ext" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/loginformstyle.css' %}">
     <style>
         nav {
@@ -21,11 +24,11 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background:  #CC0000 !important;
+            background:  radial-gradient(grey, dimgrey) !important;
             overflow: hidden;
             margin: 0;
             padding: 0;
-            border: 4px solid darkred;
+            border: 4px solid black;
             border-radius: 4px;
         }
         nav a {
@@ -35,7 +38,7 @@
         }
 
             nav a:hover {
-                background-color: #820000;
+                background-color: dimgrey;
 
             }
 
@@ -46,11 +49,11 @@
             right: 0;
             height: 100%;
             width: 121px;
-            background:  #276CE8 !important;
+            background:  radial-gradient(grey, dimgrey ) !important;
             overflow: hidden;
-            margin: 85px 0px 0px 0px;
+            margin: 90px 0px 0px 0px;
             padding: 0px;
-            border: 3px solid #75A1F1;
+            border: 3px solid black;
             border-radius: 5px;
 
             }
@@ -62,7 +65,7 @@
 
                 }
              ul.stayClassySanDiego li a:hover {
-                    background-color: #194595;
+                    background-color: #30bf47;
                     width: 100%;
                     border-radius: 7px;
                 }
@@ -71,8 +74,8 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: yellow;
-            border: 4px solid #CCCC00;
+            background: radial-gradient(grey, dimgrey);
+            border: 4px solid grey;
             border-radius: 5px;
 
         }
@@ -91,37 +94,36 @@
                 </ul>
             </div>
             <div class="container navbar-right" >
-                <nav class="writing">
+                <nav >
                         <a class="navbar-item" text-align="center">
-                            <img src="{% static "img/fortressOfSolitude.png" %}" alt="Do_You_Have_The_Strength?" width="121" height="75" />
+                            <img src="{% static 'img/banner/banner_left_logo.png' %}" alt="Do_You_Have_The_Strength?" width="121" height="75" />
                         </a>
-                        <a class="navbar-item" text-align="center" href="{% url 'organizer_upload_create' %}">
-                           <h1 align="center"><font color="white">Fortress of Solitude</font></h1>
+                        <a class="navbar-item" text-align="center" style="margin-top:30px;font-family:Bangers;" href="{% url 'organizer_upload_create' %}">
+                            <h1 align="center" class="DDDBLUE" style="margin-top:-5px" >Fortress of Solitude</h1>
+                            <h1 align="center" class="DDDRED" style="margin-top:-30px;margin-right:-5px">Fortress of Solitude</font></h1>
                         </a>
 
-                       <a href="{% url 'organizer_tag_list' %}"><h1><font color="white">    TagList   </font> </h1></a>
 
-                        <a href="{% url 'organizer_tasking_list' %}"><h1><font color="white">   TaskList   </font> </h1></a>
-                          <a class="navbar-item" href="{% url 'blog_post_list' %}"><h1><font color="white">   Notes   </font> </h1></a>
-                         <a href="{% url 'blog_securepost_list' %}"><h1><font color="white">  SecureNotes   </font> </h1></a>
-                        <a href="{% url 'blog_securepost_public_list' %}"><h1 style="font-family:'Bangers', cursive; color:#0a0a0a;"> <img src="{% static "img/logo/1337_logo_green_bg.png" %}" alt="The_Daily_Planet?" width="46" height="75" /> </h1></a>
-                       <a class="navbar-item" text-align="center">
-                         <div class="LogoutDropDown">
-                           <!-- <img class="LogoutDropDown" src="{% static "img/Kryptonite_Glow.png" %}" alt="Who is Clark Kent?" width="121" height="75"> -->
-                             <button class="Logoutbtn"><img src="{% static 'img/Kryptonite_Glow.png' %}" width="121" height="75"/></button>
-                                <div class="LogoutDropDown-content">
-                                  <a href="{% url 'dj-auth:logout' %}?
-                                         next={{ request.path }}">Logout</a>
-
-                                </div>
-                        </div>
+                       <a href="{% url 'organizer_tag_list' %}" style="margin-top:30px;font-family:Bangers; ">
+                           <h1 align="center" class="DDDBLUE" style="margin-top:-5px" >Tag List</h1>
+                            <h1 align="center" class="DDDRED" style="margin-top:-30px;margin-right:-5px">Tag List</font></h1>
                        </a>
+
+                       <a href="{% url 'organizer_tasking_list' %}" style="margin-top:30px;font-family:Bangers;">
+                           <h1 align="center" class="DDDBLUE" style="margin-top:-5px" >Tasking List</h1>
+                            <h1 align="center" class="DDDRED" style="margin-top:-30px;margin-right:-5px">Tasking List</font></h1>
+                       </a>
+                       <a href="{% url 'blog_securepost_public_list' %}" style="margin-top:30px; font-family:Bangers;">
+                           <h1 align="center" class="DDDBLUE" style="margin-top:-5px" >1337_TECH BLOG</h1>
+                            <h1 align="center" class="DDDRED" style="margin-top:-30px;margin-right:-5px">1337_TECH BLOG</font></h1>
+                       </a>
+
                 </nav>
             </div>
 
       </div>
 
-    <div  style="padding:20px;margin-top:30px;"></div>
+    <div  style="padding:20px;margin-top:55px;"></div>
     <main class="writing">
         {% block content %}
         This is default content!
@@ -132,23 +134,26 @@
       <div class="offset-by-eight four columns">
         <ul class="inline" style="list-style-type: none;">
           {% if user.is_authenticated %}
-          <li><button class="LogoutButton"><a href="{% url 'dj-auth:logout' %}?
+          <li><button class="LogoutButton"><a type="submit" href="{% url 'dj-auth:logout' %}?
                  next={{ request.path }}">
             Log Out</a></button></li>
             {% else %}
-            <li><a href="{% url 'dj-auth:login' %}?
+            <li><button class="LoginButton"><a href="{% url 'dj-auth:login' %}?
                    next={{ request.path }}">
-              Log In</a></li>
+              Log In</a></button></li>
               {% endif %}
             </ul>
           </div>
         </div>
     <div><!-- container-->
         <footer class="bottomFooter" >
-            <p align="center">
-                &copy; 2020
-                <a href="TBD.com"> LEET_TECH </a>
+            <p align="center"><a href="https://1337t3c4.com" >
+{#            <p align="center" style="z-index:1;">#}
+{#                &copy; 2022#}
+                <img src="{% static 'img/logo/transparent_1337_tech_logo.png' %}" width="75" height="75" style="border-radius: 10px;" /> </a>
+
             </p>
+
         </footer>
     </div>
 

@@ -61,12 +61,22 @@
 }
 
 .LoginButton {
-  color: #0060AA;
+  color: rgb(234, 51, 37);
   font-weight: bold;
   font-family: 'Righteous', sans-serif;
   font-size: 16px;
   border-radius: 3px;
+    margin-top: 50px;
+    margin-left: 55px;
 
+}
+
+.LoginButton a {
+    color: rgb(234, 51, 37);
+}
+
+.LoginButton a:visited {
+    color: rgb(234, 51, 37);
 }
 
 .row div p {
@@ -87,9 +97,14 @@
 }
 
 .writing {
-  color: rgb(113, 245, 251);
+  color: #30bf47;
   font-weight: bold;
   font-family: 'Righteous', sans-serif;
+    margin-left: 35px;
+}
+
+a, a:visited, a:hover, a:active {
+  color: rgb(112, 243, 251);
 }
 
 .writing article div div p {
@@ -116,7 +131,7 @@
 .CuttingEdge {
     z-index: -15;
     height: 100%;
-    background-color: #a43d9a;
+    background: -moz-radial-gradient(gray, black);;
     margin:0;
     position: relative;
 }
@@ -125,9 +140,8 @@
     z-index: -15;
     content: '';
     position: absolute;
-    top: 0; right: 0;
-    border-top: 800px solid #69BB01;
-    border-left: 500px solid #a43d9a;
+    top: 15px; right: 0;
+    background: -moz-radial-gradient(gray, black);
     width: 0;
 }
 
@@ -188,6 +202,22 @@
 .BlueGreenSkull{
     color: rgb(116, 249, 178);
 }
+
+.DDDBLUE{
+    color: rgb(112, 243, 251);
+}
+DDDBLUE, DDDBLUE:visited, DDDBLUE:hover, DDDBLUE:active {
+  color: inherit;
+}
+
+.DDDRED{
+    color: rgb(234, 51, 37);
+}
+DDDRED, DDDRED:visited, DDDRED:hover, DDDRED:active {
+  color: inherit;
+}
+
+
 
 .OrangeThing {
   color: #ff9933
@@ -360,7 +390,7 @@ body {
     width: 740px;
     height: 740px;
     margin-left: -370px;
-    margin-top: -370px;
+    margin-top: -250px;
     display: block;
     position: absolute;
     left: 50%;
@@ -486,7 +516,7 @@ body {
 
 .bg{
 	  overflow:hidden;
-		background:-moz-radial-gradient(#a43d9a, #561f51);
+		background:-moz-radial-gradient(gray, black);
 		position: absolute;
 		top:0;
 		left:0;

@@ -5,6 +5,7 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 
 from django import forms
 from django.contrib.auth import get_user
+from django.contrib.auth.models import AnonymousUser
 
 from .models import Post, SecureDataAtRestPost, SecureDataAtRestPostPublic
 from _FortressOfSolitude.organizer.models import SecureNote
@@ -68,7 +69,7 @@ class PublicSecurePostForm(forms.ModelForm):
     def save(self, request, commit=True):
         post = super().save(commit=False)
         if not post.pk:
-            post.author = get_user(request)
+            post.author = request.user
         if commit:
             print("PK" + str(self.instance.pk))
             if self.instance.pk != None:

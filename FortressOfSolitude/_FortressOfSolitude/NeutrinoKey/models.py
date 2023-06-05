@@ -199,7 +199,7 @@ class DEK(models.Model):
             # bytes are assumed to be already base64decoded
             dek = crypto.AesEncryptEAX(key_to_wrap, kek.kek)
             kek.wrap_key(password)
-            return self.dek
+            return dek
 
         else:
             try:
@@ -401,7 +401,9 @@ def DeriveDek_from_Kek(kek: KEK, password: bytes):
             dek = DerivedDek
             dek = DEK.wrap_key_static(kekForDek, password, dek)
             newDek = DEK(result_wrappedDek=b64encode(dek), result_SALT=SALT,
-                         kek_to_retrieve=kekForDek, result_wrapped_nonce=b64encode(crypto.nonce))
+                         result_wrapped_nonce=b64encode(crypto.nonce))
+            newDek.save()
+            newDek.kek_to_retrieve.add(kekForDek)
             newDek.save()
             return newDek
 

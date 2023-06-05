@@ -8,6 +8,7 @@ from base64 import (b64encode, b64decode)
 from datetime import datetime
 from ctypes import Union
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import models
@@ -77,9 +78,9 @@ class Librarian(models.Manager):
         encrypted_data = Librarian.crypt.AesEncryptEAX(modeldata, DEK.crypto.Sha256(key))
 
         post.secure_text = encrypted_data
-
-        post.data_dek.remove(post.data_dek.get())
-        post.data_kek.remove(post.data_kek.get())  # change this before deployment
+        post.save()
+        # post.data_dek.remove(post.data_dek.get())
+        # post.data_kek.remove(post.data_kek.get())  # change this before deployment
         post.save()
         data_kek.save()
         data_dek.save()
@@ -97,15 +98,15 @@ class Librarian(models.Manager):
         req = kwargs.pop('request', False)
         post = kwargs.pop('postobj', False)
 
-        data_kek = NeutronCore().DeriveKek(settings.DAILY_PLANET_AES_DEK)
+        data_kek = NeutronCore().DeriveKek(self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
         # data_dek = NeutronMatterCollector().DeriveDek(settings.DAILY_PLANET_AES_DEK)
         # data_dek = DeriveDek_default(settings.DAILY_PLANET_AES_DEK)
-        data_dek = DeriveDek_from_Kek(data_kek, settings.DAILY_PLANET_AES_DEK)
+        data_dek = DeriveDek_from_Kek(data_kek, self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
         nonce = data_kek.result_wrapped_nonce
         Librarian.crypt.nonce = b64decode(nonce)
         if not isinstance(password, bytes):
             password = password.encode()
-        key = data_kek.unwrap_key(settings.DAILY_PLANET_AES_DEK)
+        key = data_kek.unwrap_key(self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
 
         if isinstance(modeldata, str):
             modeldata = modeldata.encode()
@@ -255,10 +256,14 @@ class Gor_El(models.Manager):
         ciphertext = secureNote.secure_text
         data_dek = secureNote.data_dek
         data_kek = secureNote.data_kek
-
+        data_dek = data_dek.get()
+        data_kek = data_kek.get()
         # now make sure their in the correct format
         try:
             if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
+                if isinstance(secureNote, SecureNotePublic):
+                    request.user = AnonymousUser()
+                    raise(Exception, "Look here you need to be Anonymous to read the Anonymous blog post")
                 wrapped_nonce = (secureNote.data_dek.get().result_wrapped_nonce.encode()).replace(b"b'", b'')
                 wrapped_nonce = wrapped_nonce.replace(b"'", b'')
                 wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
@@ -278,7 +283,7 @@ class Gor_El(models.Manager):
         except Exception as e:
             print(e)
 
-            data_dek = DEK()
+            # data_dek = DEK()
 
             if isinstance(secureNote.secure_text, str):
                 ciphertext = secureNote.secure_text
@@ -288,14 +293,45 @@ class Gor_El(models.Manager):
                 ciphertext = ciphertext.encode()
 
             if str(request.user) is "AnonymousUser":
+                data_dek: DEK = secureNote.data_dek.get()
+                data_kek: KEK = secureNote.data_kek.get()
+                # data_kek.crypto.nonce = b64decode(data_kek.result_wrapped_nonce)
+                key = data_kek.unwrap_key(CryptoTools().Sha256(settings.DAILY_PLANET_AES_DEK))
+
+                if key is None:
+                    return None
+
                 password = settings.DAILY_PLANET_AES_DEK
+                nonce = data_kek.result_wrapped_nonce
+                # data_dek.nonce = b64decode(nonce)
+
+                if isinstance(nonce, str):
+                    result_wrapped_nonce = (nonce.encode()).replace(b"b'", b'')
+                    result_wrapped_nonce = result_wrapped_nonce[:-1]
+                    result_wrapped_nonce = result_wrapped_nonce + b'=' * (len(result_wrapped_nonce) % 4)
+                    data_dek.crypto.nonce = b64decode(result_wrapped_nonce)
+
+                if isinstance(data_dek.result_wrappedDek, str):
+                    dek = (data_dek.result_wrappedDek.encode()).replace(b"b'", b'')
+                    dek = dek[:-1]
+                    dek = dek + b'=' * (len(dek) % 4)
+                    # daka_dek.crypt.nonce = b64decode(result_wrapped_nonce)
+
+                data_key = data_dek.crypto.AesDecryptEAX(b64decode(dek), key)
+
+                # dek_key = data_dek.unwrap_key(data_kek, CryptoTools().Sha256(password))
+                self.crypt.nonce = b64decode(nonce)
             else:
                 password = request.user.password.encode()
             keyToFile = settings.DAILY_PLANET_AES_DEK
 
         hash = CryptoTools()
 
-        plaintext = self.crypt.AesDecryptEAX(ciphertext, hash.Sha256(keyToFile))
+        if str(request.user) is "AnonymousUser":
+            data_dek.crypto.nonce = b64decode(result_wrapped_nonce)
+            plaintext = data_dek.crypto.AesDecryptEAX(ciphertext, CryptoTools().Sha256(key))
+        else:
+            plaintext = self.crypt.AesDecryptEAX(ciphertext, data_dek)
 
         return plaintext
 

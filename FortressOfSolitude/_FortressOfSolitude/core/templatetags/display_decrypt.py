@@ -27,6 +27,14 @@ def decrypt_text(secure_note, context):
     return gor_el._decrypt_text(secure_text, context)
 
 
+@register.simple_tag(name='decrypt_public_text', takes_context=True)
+def decrypt_public_text(context, secure_note):
+    gor_el = Gor_El()
+    secure_text = context['object']
+    request = context['request']
+    return gor_el._decrypt_text(secure_text, request)
+
+
 @register.inclusion_tag(
     'core/includes/downloads.html',
     takes_context=True)
