@@ -8,6 +8,7 @@ from base64 import (b64encode, b64decode)
 from datetime import datetime
 from ctypes import Union
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import models
@@ -16,7 +17,8 @@ from django.utils import timezone
 
 import _FortressOfSolitude.settings as settings
 from _FortressOfSolitude.NeutrinoKey.cryptoutils import CryptoTools
-from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore
+from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore, DeriveDek_default, \
+    DeriveDek_from_Kek
 
 # Create your models here.
 
@@ -76,14 +78,47 @@ class Librarian(models.Manager):
         encrypted_data = Librarian.crypt.AesEncryptEAX(modeldata, DEK.crypto.Sha256(key))
 
         post.secure_text = encrypted_data
-
-        post.data_dek.remove(post.data_dek.get())
-        post.data_kek.remove(post.data_kek.get())  # change this before deployment
+        post.save()
+        # post.data_dek.remove(post.data_dek.get())
+        # post.data_kek.remove(post.data_kek.get())  # change this before deployment
         post.save()
         data_kek.save()
         data_dek.save()
         post.data_dek.add(data_dek)
         post.data_kek.add(data_kek)
+        print("SECURED A NOTE: ENCRYPTED Sending off to Save")
+
+        post.save()
+
+        return post
+
+    def _encrypt_Daily_Planet_Note(self, password, **kwargs):
+        modeldata = kwargs.pop('secure_text', False)
+
+        req = kwargs.pop('request', False)
+        post = kwargs.pop('postobj', False)
+
+        data_kek = NeutronCore().DeriveKek(self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
+        # data_dek = NeutronMatterCollector().DeriveDek(settings.DAILY_PLANET_AES_DEK)
+        # data_dek = DeriveDek_default(settings.DAILY_PLANET_AES_DEK)
+        data_dek = DeriveDek_from_Kek(data_kek, self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
+        nonce = data_kek.result_wrapped_nonce
+        Librarian.crypt.nonce = b64decode(nonce)
+        if not isinstance(password, bytes):
+            password = password.encode()
+        key = data_kek.unwrap_key(self.crypt.Sha256(settings.DAILY_PLANET_AES_DEK))
+
+        if isinstance(modeldata, str):
+            modeldata = modeldata.encode()
+        encrypted_data = Librarian.crypt.AesEncryptEAX(modeldata, DEK.crypto.Sha256(key))
+
+        post.secure_text = encrypted_data
+        post.save()
+        data_kek.save()
+        data_dek.save()
+        post.data_kek.add(data_kek)
+        post.data_dek.add(data_dek)
+
         print("SECURED A NOTE: ENCRYPTED Sending off to Save")
 
         post.save()
@@ -149,8 +184,8 @@ class Librarian(models.Manager):
         data.save()
         data_dek.save()
         data_kek.save()
-        data.data_kek.add(data_kek)
-        data.data_dek.add(data_dek)
+        data.data_kek = data_kek
+        data.data_dek = data_dek
         print("ENCRYPTED AND SAVED DATA")
         data.save()
 
@@ -221,28 +256,82 @@ class Gor_El(models.Manager):
         ciphertext = secureNote.secure_text
         data_dek = secureNote.data_dek
         data_kek = secureNote.data_kek
-
+        data_dek = data_dek.get()
+        data_kek = data_kek.get()
         # now make sure their in the correct format
-        if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
-            wrapped_nonce = (secureNote.data_dek.get().result_wrapped_nonce.encode()).replace(b"b'", b'')
-            wrapped_nonce = wrapped_nonce.replace(b"'", b'')
-            wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
-            self.crypt.nonce = b64decode(wrapped_nonce)
-        else:
-            self.crypt.nonce = b64decode(secureNote.data_dek.get().result_wrapped_nonce)
+        try:
+            if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
+                if isinstance(secureNote, SecureNotePublic):
+                    request.user = AnonymousUser()
+                    raise(Exception, "Look here you need to be Anonymous to read the Anonymous blog post")
+                wrapped_nonce = (secureNote.data_dek.get().result_wrapped_nonce.encode()).replace(b"b'", b'')
+                wrapped_nonce = wrapped_nonce.replace(b"'", b'')
+                wrapped_nonce = wrapped_nonce + b'=' * (len(wrapped_nonce) % 4)
+                self.crypt.nonce = b64decode(wrapped_nonce)
+            else:
+                self.crypt.nonce = b64decode(secureNote.data_dek.get().result_wrapped_nonce)
 
-        if isinstance(secureNote.secure_text, str):
-            ciphertext = secureNote.secure_text
-            ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
-            ciphertext = ciphertext[2:len(ciphertext) - 1]
-        else:
-            ciphertext = ciphertext.encode()
+            if isinstance(secureNote.secure_text, str):
+                ciphertext = secureNote.secure_text
+                ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
+                ciphertext = ciphertext[2:len(ciphertext) - 1]
+            else:
+                ciphertext = ciphertext.encode()
 
-        data_dek = secureNote.data_dek.get(id=secureNote.data_dek.get().id)
-        keyToFile = data_dek.unwrap_key(secureNote.data_kek.get(), request.user.password.encode())
+            data_dek = secureNote.data_dek.get(id=secureNote.data_dek.get().id)
+
+        except Exception as e:
+            print(e)
+
+            # data_dek = DEK()
+
+            if isinstance(secureNote.secure_text, str):
+                ciphertext = secureNote.secure_text
+                ciphertext = ciphertext.encode('latin1').decode('unicode-escape').encode('latin1')
+                ciphertext = ciphertext[2:len(ciphertext) - 1]
+            else:
+                ciphertext = ciphertext.encode()
+
+            if str(request.user) is "AnonymousUser":
+                data_dek: DEK = secureNote.data_dek.get()
+                data_kek: KEK = secureNote.data_kek.get()
+                # data_kek.crypto.nonce = b64decode(data_kek.result_wrapped_nonce)
+                key = data_kek.unwrap_key(CryptoTools().Sha256(settings.DAILY_PLANET_AES_DEK))
+
+                if key is None:
+                    return None
+
+                password = settings.DAILY_PLANET_AES_DEK
+                nonce = data_kek.result_wrapped_nonce
+                # data_dek.nonce = b64decode(nonce)
+
+                if isinstance(nonce, str):
+                    result_wrapped_nonce = (nonce.encode()).replace(b"b'", b'')
+                    result_wrapped_nonce = result_wrapped_nonce[:-1]
+                    result_wrapped_nonce = result_wrapped_nonce + b'=' * (len(result_wrapped_nonce) % 4)
+                    data_dek.crypto.nonce = b64decode(result_wrapped_nonce)
+
+                if isinstance(data_dek.result_wrappedDek, str):
+                    dek = (data_dek.result_wrappedDek.encode()).replace(b"b'", b'')
+                    dek = dek[:-1]
+                    dek = dek + b'=' * (len(dek) % 4)
+                    # daka_dek.crypt.nonce = b64decode(result_wrapped_nonce)
+
+                data_key = data_dek.crypto.AesDecryptEAX(b64decode(dek), key)
+
+                # dek_key = data_dek.unwrap_key(data_kek, CryptoTools().Sha256(password))
+                self.crypt.nonce = b64decode(nonce)
+            else:
+                password = request.user.password.encode()
+            keyToFile = settings.DAILY_PLANET_AES_DEK
 
         hash = CryptoTools()
-        plaintext = self.crypt.AesDecryptEAX(ciphertext, hash.Sha256(keyToFile))
+
+        if str(request.user) is "AnonymousUser":
+            data_dek.crypto.nonce = b64decode(result_wrapped_nonce)
+            plaintext = data_dek.crypto.AesDecryptEAX(ciphertext, CryptoTools().Sha256(key))
+        else:
+            plaintext = self.crypt.AesDecryptEAX(ciphertext, data_dek)
 
         return plaintext
 
@@ -316,8 +405,6 @@ class Gor_El(models.Manager):
             return plaintext
 
         return plaintext
-
-
 
 
 class Tag(models.Model):
@@ -582,6 +669,45 @@ class SecureNote(models.Model):
 
     def get_update_url(self):
         return reverse('blog_securepost_update', kwargs={'slug': self.slug})
+
+    def natural_key(self):
+        return (self.slug,)
+
+
+class SecureNotePublic(models.Model):
+    """
+    Used as sort of a Base class for a Securing Arbitrary Text to be viewed as a Public Post which is used as an example in the
+    _FortressOfSolitude.Blog.models.SecureDataAtRestPost which inherits this class to more or less
+    simply be a little 'organized' as to what is all required to secure a Note.  At the moment you need
+    to have a data_dek and data_kek already stored in the database in order to begin generating
+    it doesn't actually select the data_kek and data_dek, there is a form slot for it but no matter
+    what it will randomly generate one in case there is someone trying to reuse keys.  I saw this as a
+    potential security flaw if you could use the same key for a different file.
+    """
+    slug = models.SlugField(max_length=32, unique=True, db_index=True, help_text='A label for URL config.')
+    title = models.CharField(max_length=64, default='Bruh, Change the Title')
+    pub_date = models.DateTimeField('date published', auto_now_add=timezone.now())
+    secure_text = models.TextField(default="Please add Note Text")
+    data_dek = models.ManyToManyField(DEK, default=1, related_name='data_dek_public')
+    data_kek = models.ManyToManyField(KEK, default=1, related_name='data_kek_public')
+    result_nonce_text = models.CharField(max_length=128, default=b64encode(int(55).to_bytes(4, 'big')))
+
+    # objects = Librarian()
+
+    class Meta:
+        abstract = True
+        ordering = ['-secure_text']
+
+    def __str__(self):
+        return "{} on {}".format(
+            self.title,
+            self.pub_date)
+
+    def get_absolute_url(self):
+        return reverse('blog_public_securepost_detail', kwargs={'slug': self.slug})
+
+    def get_update_url(self):
+        return reverse('blog_public_securepost_update', kwargs={'slug': self.slug})
 
     def natural_key(self):
         return (self.slug,)

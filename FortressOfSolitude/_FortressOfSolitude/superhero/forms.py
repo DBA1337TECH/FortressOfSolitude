@@ -4,28 +4,25 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 """
 
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse
+from django.contrib.auth import password_validation
+from django.contrib.auth.forms import UsernameField, UserCreationForm
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from .models import User
 
 
-class RegisterForm(UserCreationForm):
-    email = forms.CharField(max_length=32)
-    pwd = forms.CharField(max_length=32, min_length=7)
+class DailyPlanetSubscriber(UserCreationForm):
+    first_name = forms.CharField(max_length=30, required=False, help_text='Optional')
+    last_name = forms.CharField(max_length=30, required=False, help_text='Optional')
+    email = forms.EmailField(max_length=254, help_text='Enter a valid email address')
 
     class Meta:
         model = User
-        widgets = {
-            'pwd': forms.PasswordInput(),
-        }
-        fields = ('email', 'pwd',)
-
-    def clean_email(self):
-        return self.cleaned_data['email'].lower()
-
-    def get_absolute_url(self):
-        return reverse(
-            'register_create',
-            kwargs={'user': self.user,
-                    })
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'password1',
+            'password2',
+            ]

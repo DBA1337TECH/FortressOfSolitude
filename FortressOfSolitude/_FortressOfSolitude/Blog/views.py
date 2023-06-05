@@ -10,8 +10,8 @@ from django.views.generic import (ArchiveIndexView, CreateView, DeleteView, Deta
                                   YearArchiveView)
 
 from .decorators import require_authenticated_permission
-from .forms import PostForm, SecurePostForm
-from .models import Post, SecureDataAtRestPost
+from .forms import PostForm, SecurePostForm, PublicSecurePostForm
+from .models import Post, SecureDataAtRestPost, SecureDataAtRestPostPublic
 from .utils import (
     AllowFuturePermissionMixin, DateObjectMixin,
     PostFormValidMixin, PostGetMixin, SecurePostGetMixin)
@@ -27,11 +27,13 @@ def greeting(request):
 class PostDetail(PostGetMixin, DetailView):
     model = Post
 
+
 @require_authenticated_permission(
     'Blog.add_post')
 class PostUpdate(UpdateView):
     form_class = PostForm
     model = Post
+
 
 @require_authenticated_permission(
     'Blog.add_post')
@@ -39,6 +41,14 @@ class SecurePostUpdate(PostFormValidMixin, UpdateView):
     form_class = SecurePostForm
     model = SecureDataAtRestPost
     template_name = 'Blog/secureNote_form_update.html'
+
+@require_authenticated_permission(
+    'Blog.add_post')
+class PublicSecurePostUpdate(PostFormValidMixin, UpdateView):
+    form_class = PublicSecurePostForm
+    model = SecureDataAtRestPostPublic
+    template_name = 'Blog/public_secureNote_form_update.html'
+
 
 @require_authenticated_permission(
     'Blog.delete_post')
@@ -55,11 +65,25 @@ class SecurePostDelete(SecurePostGetMixin, DeleteView):
     # template_name = 'blog/secureNote_confirm_delete.html'
     queryset = (
         SecureDataAtRestPost.objects
-            .select_related('author')
-            # .prefetch_related('startups')
-            .prefetch_related('tags')
+        .select_related('author')
+        # .prefetch_related('startups')
+        .prefetch_related('tags')
     )
     success_url = reverse_lazy('blog_securepost_list')
+
+@require_authenticated_permission(
+    'Blog.delete_post')
+class PublicSecurePostDelete(SecurePostGetMixin, DeleteView):
+    date_field = 'pub_date'
+    model = SecureDataAtRestPostPublic
+    template_name = 'blog/public_secureNote_confirm_delete.html'
+    queryset = (
+        SecureDataAtRestPost.objects
+        .select_related('author')
+        # .prefetch_related('startups')
+        .prefetch_related('tags')
+    )
+    success_url = reverse_lazy('blog_securepost_public_list')
 
 
 @require_authenticated_permission(
@@ -76,6 +100,14 @@ class SecurePostCreate(PostFormValidMixin, CreateView):
     model = SecureDataAtRestPost
     template_name = 'Blog/securenote_form.html'
 
+@require_authenticated_permission(
+    'Blog.add_post')
+class PublicSecurePostCreate(PostFormValidMixin, CreateView):
+    form_class = PublicSecurePostForm
+    model = SecureDataAtRestPostPublic
+    context_object_name = 'secureNote_public_create'
+    template_name = 'Blog/secureNote_public_form.html'
+
 
 @require_authenticated_permission(
     'Blog.delete_post')
@@ -91,9 +123,9 @@ class PostDetail(DateObjectMixin, DetailView):
     date_field = 'pub_date'
     queryset = (
         Post.objects
-            .select_related('author')
-            # .prefetch_related('startups')
-            .prefetch_related('tags')
+        .select_related('author')
+        # .prefetch_related('startups')
+        .prefetch_related('tags')
     )
 
 
@@ -103,10 +135,25 @@ class SecurePostDetail(DateObjectMixin, DetailView):
     date_field = 'pub_date'
     queryset = (
         SecureDataAtRestPost.objects
-            .select_related('author')
-            # .prefetch_related('startups')
-            .prefetch_related('tags')
+        .select_related('author')
+        # .prefetch_related('startups')
+        .prefetch_related('tags')
     )
+
+    context_object_name = 'secureNote_detail'
+    template_name = 'Blog/securedataatrestpost_detail.html'
+
+
+class PublicSecurePostDetail(DateObjectMixin, DetailView):
+    date_field = 'pub_date'
+    queryset = (
+        SecureDataAtRestPostPublic.objects
+        .select_related('author')
+        .prefetch_related('tags')
+    )
+
+    context_object_name = 'secureNote_public_detail'
+    template_name = 'Blog/public_secureNote_detail.html'
 
 
 @require_authenticated_permission(
@@ -135,6 +182,17 @@ class SecurePostList(
     model = SecureDataAtRestPost
     paginate_by = 5
     template_name = 'Blog/secureNote_list.html'
+
+class PublicSecurePostList(
+    AllowFuturePermissionMixin,
+    ArchiveIndexView):
+    allow_empty = True
+    context_object_name = 'blog_secureNote_public_list'
+    date_field = 'pub_date'
+    make_object_list = True
+    model = SecureDataAtRestPostPublic
+    paginate_by = 5
+    template_name = 'Blog/public_secureNote_list.html'
 
 
 # @require_authenticated_permission(
@@ -182,8 +240,19 @@ class SecurePostArchiveYear(
     template_name = 'Blog/secureNote_archive_year.html'
 
 
-@require_authenticated_permission(
-    'Blog.view_post')
+class PublicSecurePostArchiveYear(
+    AllowFuturePermissionMixin,
+    YearArchiveView):
+    allow_empty = True
+    context_object_name = 'public_securepost_archive_year'
+    date_field = 'pub_date'
+    make_object_list = True
+    model = SecureDataAtRestPostPublic
+    paginate_by = 5
+    template_name = 'Blog/public_secureNote_archive_year.html'
+
+
+
 class SecurePostArchiveMonth(
     AllowFuturePermissionMixin,
     MonthArchiveView):
@@ -194,3 +263,14 @@ class SecurePostArchiveMonth(
     paginate_by = 5
     context_object_name = 'securepost_archive_month'
     template_name = 'Blog/secureNote_archive_month.html'
+
+class PublicSecurePostArchiveMonth(
+    AllowFuturePermissionMixin,
+    MonthArchiveView):
+    model = SecureDataAtRestPostPublic
+    make_object_list = True
+    date_field = 'pub_date'
+    month_format = '%m'
+    paginate_by = 5
+    context_object_name = 'securepost_public_archive_month'
+    template_name = 'Blog/public_secureNote_archive_month.html'

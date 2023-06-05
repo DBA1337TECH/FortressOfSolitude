@@ -5,8 +5,9 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 
 from django import forms
 from django.contrib.auth import get_user
+from django.contrib.auth.models import AnonymousUser
 
-from .models import Post, SecureDataAtRestPost
+from .models import Post, SecureDataAtRestPost, SecureDataAtRestPostPublic
 from _FortressOfSolitude.organizer.models import SecureNote
 from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK
 
@@ -52,6 +53,35 @@ class SecurePostForm(forms.ModelForm):
                 print("We just Edited the Secure Note")
             else:
                 post = post.__class__.objects._encrypt_Secure_Note(password=request.user.password,
+                                                                   secure_text=post.secure_text, postobj=post,
+                                                                   request=request)
+        return post
+
+
+class PublicSecurePostForm(forms.ModelForm):
+    class Meta:
+        model = SecureDataAtRestPostPublic
+        exclude = ('author',)
+
+    def clean_slug(self):
+        return self.cleaned_data['slug'].lower()
+
+    def save(self, request, commit=True):
+        post = super().save(commit=False)
+        if not post.pk:
+            post.author = request.user
+        if commit:
+            print("PK" + str(self.instance.pk))
+            if self.instance.pk != None:
+                x = self.instance.pk
+                print("about to edit the Daily Planet Secure Article")
+                post = post.__class__.objects._encrypt_Daily_Planet_Note(password=request.user.password,
+                                                                          secure_text=post.secure_text, postobj=post,
+                                                                          request=request)
+                print("We just Edited the Daily Planet Secure Article")
+            else:
+                print("about to encrypt a Daily Planet Secure Article")
+                post = post.__class__.objects._encrypt_Daily_Planet_Note(password=request.user.password,
                                                                    secure_text=post.secure_text, postobj=post,
                                                                    request=request)
         return post

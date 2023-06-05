@@ -10,7 +10,7 @@ from django.urls import reverse, reverse_lazy
 import _FortressOfSolitude.settings as settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from _FortressOfSolitude.organizer.models import Startup, Tag, Tasking, SecureNote, Librarian
+from _FortressOfSolitude.organizer.models import Startup, Tag, Tasking, SecureNote, Librarian, SecureNotePublic
 from _FortressOfSolitude.organizer.models import SecureNote
 
 
@@ -119,6 +119,88 @@ class SecureDataAtRestPost(SecureNote):
     def get_update_url(self):
         return reverse(
             'blog_securepost_update',
+            kwargs={'year': self.pub_date.year,
+                    'month': self.pub_date.month,
+                    'slug': self.slug})
+
+    def natural_key(self):
+        return (
+            self.pub_date,
+            self.slug)
+
+    natural_key.dependencies = [
+        'user.user',
+    ]
+
+    def formatted_title(self):
+        return self.title.title()
+
+    def short_text(self):
+        if len(self.text) > 20:
+            short = ' '.join(self.text.split()[:20])
+            short += ' ...'
+        else:
+            short = self.text
+        return short
+
+
+class SecureDataAtRestPostPublic(SecureNotePublic):
+    author = models.ForeignKey(
+        get_user_model(),
+        related_name='secureblog_public_posts_author',
+        on_delete=models.CASCADE,
+        default=1)
+    tags = models.ManyToManyField(Tag, related_name='secureblog_public_posts_tags')
+    tasking = models.ManyToManyField(Tasking, related_name='securetasking_public')
+    is_encrypted = models.BooleanField(default=True)
+
+    objects = Librarian()
+
+    class Meta:
+        verbose_name = '[Secure] blog public post'
+        ordering = ['-pub_date', 'title']
+        get_latest_by = 'pub_date'
+        permissions = (
+            ("view_future_post",
+             "Can view unpublished Post"),
+            ("add_tasking",
+             "Can add task"),
+        )
+
+    def __str__(self):
+        return "{} on {}".format(
+            self.title,
+            self.pub_date.strftime('%Y-%m-%d'))
+
+    def get_absolute_url(self):
+        return reverse(
+            'blog_securepost_public_detail',
+            kwargs={'year': self.pub_date.year,
+                    'month': self.pub_date.month,
+                    'slug': self.slug})
+
+    def get_archive_month_url(self):
+        return reverse(
+            'blog_securepost_public_archive_month',
+            kwargs={'year': self.pub_date.year,
+                    'month': self.pub_date.month})
+
+    def get_archive_year_url(self):
+        print(f'{self.pub_date.year}')
+        return reverse(
+            'blog_securepost_public_archive_year',
+            kwargs={'year': self.pub_date.year})
+
+    def get_delete_url(self):
+        return reverse(
+            'blog_securepost_public_delete',
+            kwargs={'year': self.pub_date.year,
+                    'month': self.pub_date.month,
+                    'slug': self.slug})
+
+    def get_update_url(self):
+        return reverse(
+            'blog_securepost_public_update',
             kwargs={'year': self.pub_date.year,
                     'month': self.pub_date.month,
                     'slug': self.slug})

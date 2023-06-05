@@ -6,10 +6,13 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 
 from django.conf.urls import url
 
-from .views import ( PostCreate,
-    PostDelete, PostDetail, PostList, PostUpdate, PostArchiveYear, PostArchiveMonth, SecurePostList, SecurePostDetail,
-                     SecurePostCreate, SecurePostUpdate, SecurePostDelete, SecurePostArchiveYear,
-                     SecurePostArchiveMonth)
+from .views import (PostCreate,
+                    PostDelete, PostDetail, PostList, PostUpdate, PostArchiveYear, PostArchiveMonth, SecurePostList,
+                    SecurePostDetail,
+                    SecurePostCreate, SecurePostUpdate, SecurePostDelete, SecurePostArchiveYear,
+                    SecurePostArchiveMonth, PublicSecurePostCreate, PublicSecurePostDelete, PublicSecurePostDetail,
+                    PublicSecurePostUpdate, PublicSecurePostList, PublicSecurePostArchiveYear,
+                    PublicSecurePostArchiveMonth)
 
 urlpatterns = [
     url(r'^Securelist/$',
@@ -48,6 +51,40 @@ urlpatterns = [
         r'delete/$',
         SecurePostDelete.as_view(),
         name='blog_securepost_delete'),
+
+    #Public Viewable Blog
+    url(r'^PublicSecurelist/$',
+        PublicSecurePostList.as_view(),
+        name='blog_securepost_public_list'),
+    url(r'^PublicSecurecreate/$',
+        PublicSecurePostCreate.as_view(),
+        name='blog_securepost_public_create'),
+    url(r'^PublicSecureNote/(?P<year>\d{4})/'
+        r'(?P<month>\d{1,2})/'
+        r'(?P<slug>[\w\-]+)/$',
+        PublicSecurePostDetail.as_view(),
+        name='blog_securepost_public_detail'),
+    url(r'^PublicSecureNote/(?P<year>\d{4})/'
+        r'(?P<month>\d{1,2})/'
+        r'(?P<slug>[\w\-]+)/$',
+        PublicSecurePostUpdate.as_view(),
+        name='blog_secureNote_public_form_update'),
+    url(r'^PublicSecureNote/'
+        r'(?P<year>\d{4})/'
+        r'(?P<month>\d{1,2})/'
+        r'(?P<slug>[\w\-]+)/'
+        r'delete/$',
+        PublicSecurePostDelete.as_view(),
+        name='blog_securepost_public_delete'),
+    url(r'^PublicSecureNote/'
+        r'(?P<year>\d{4})/$',
+        PublicSecurePostArchiveYear.as_view(),
+        name='blog_securepost_public_archive_year'),
+    url(r'^PublicSecureNote/(?P<year>\d{4})/'
+        r'(?P<month>\d{1,2})/$',
+        PublicSecurePostArchiveMonth.as_view(),
+        name='blog_securepost_public_archive_month'),
+    #END of Public Viewable Posts
 
     url(r'^(?P<year>\d{4})/'
         r'(?P<month>\d{1,2})/'

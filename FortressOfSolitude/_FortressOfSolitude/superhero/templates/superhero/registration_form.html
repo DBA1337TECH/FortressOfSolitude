@@ -1,0 +1,49 @@
+{% extends parent_template|default:"superhero/base.html" %}
+
+{% block title %}
+{{ block.super }} - Create Superhero
+{% endblock %}
+
+{% block content %}
+
+    <form class="SanAntone"
+ action="{% url 'superhero:register_create' %}"
+ method="post">
+ {% csrf_token %}
+ {{ form.as_p }}
+ <button type="submit">
+
+   {{ login_button|default:'Register'}}</button>
+</form>
+{% if next %}
+    <input type="hidden" name="next" value="{{ next }}" />
+{% endif %}
+
+
+{#    <form action="{% url 'superhero:register_create' %}"#}
+{#          method="post">#}
+{#        {% csrf_token %}#}
+{#        <h2> Register as a new subscriber <!-- name of tag --> </h2>#}
+{#        <p>#}
+{#            <label for="id_email">Email:</label>#}
+{#            <input id="id_email" maxlength="32"#}
+{#                   name="email" type="text" />#}
+{#            <span class="helptext">#}
+{#                Email Address of SuperHero (used as the username)#}
+{#            </span>#}
+{#        </p>#}
+{##}
+{#        <p>#}
+{#            <label for="id_password1">Password:</label>#}
+{#            <input id="id_password1" maxlength="32"#}
+{#                   name="password1" type="password" />#}
+{#            <label for="id_password2">Password Confirmation:</label>#}
+{#            <input id="id_password2" maxlength="32"#}
+{#                   name="password2" type="password" />#}
+{#            <span class="helptext">#}
+{#                Password is a minimum of 8 characters#}
+{#            </span>#}
+{#        </p>#}
+{#        <button class="CreateButton" type="submit"> Create New User </button>#}
+{#    </form>#}
+{% endblock %}

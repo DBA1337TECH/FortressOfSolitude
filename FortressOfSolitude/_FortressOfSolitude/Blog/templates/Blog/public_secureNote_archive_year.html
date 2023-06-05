@@ -1,7 +1,7 @@
 {% extends parent_template|default:"Blog/base_blog.html" %}
 
 {% block title %}
-{{ block.super }} - {{ year|date:"Y" }} SecureNotes
+{{ block.super }} - {{ year|date:"Y" }} SecureNotesPublic
 {% endblock %}
 
 {% block content %}
@@ -10,13 +10,13 @@
     <div class="mobile">
       {% if perms.blog.add_post %}
         <a
-          href="{% url 'blog_securepost_create' %}"
+          href="{% url 'blog_securepost_public_create' %}"
           class="button button-primary">
         Write New Blog Post</a>
       {% endif %}
     </div>
     <h2>All Posts for {{ year|date:"F Y" }}</h2>
-    {% for post in securepost_archive_year %}
+    {% for post in public_securepost_archive_year %}
       <article class="list-item">
         <header>
           <h3>
@@ -62,14 +62,14 @@
   <div class="desktop four columns">
     {% if perms.blog.add_post %}
       <a
-        href="{% url 'blog_securepost_create' %}"
+        href="{% url 'blog_securepost_public_create' %}"
         class="button button-primary">
       Write New Blog Post</a>
     {% endif %}
     <h3>Archives by Month</h3>
     <ul>
       {% for m in date_list %}
-      <li><a href="{% url 'blog_securepost_archive_month' m|date:"Y" m|date:"n" %}">
+      <li><a href="{% url 'blog_securepost_public_archive_month' m|date:"Y" m|date:"n" %}">
           {{ m|date:"F Y" }}</a></li>
       {% endfor %}
     </ul>
@@ -80,13 +80,13 @@
     <ul class="pagination">
       {% if previous_year %}
         <li>
-          <a href="{% url 'blog_securepost_archive_year' previous_year|date:"Y" %}">
+          <a href="{% url 'blog_securepost_public_archive_year' previous_year|date:"Y" %}">
             ❮ Posts from {{ previous_year|date:"Y" }}</a>
         </li>
       {% endif %}
       {% if next_year %}
         <li>
-          <a href="{% url 'blog_securepost_archive_year' next_year|date:"Y" %}">
+          <a href="{% url 'blog_securepost_public_archive_year' next_year|date:"Y" %}">
             Posts from {{ next_year|date:"Y" }} ❯</a>
         </li>
       {% endif %}
