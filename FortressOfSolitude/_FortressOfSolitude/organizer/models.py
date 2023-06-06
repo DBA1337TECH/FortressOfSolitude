@@ -20,6 +20,8 @@ from _FortressOfSolitude.NeutrinoKey.cryptoutils import CryptoTools
 from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore, DeriveDek_default, \
     DeriveDek_from_Kek
 
+from ckeditor.fields import RichTextField
+
 # Create your models here.
 
 # Constants
@@ -687,7 +689,7 @@ class SecureNotePublic(models.Model):
     slug = models.SlugField(max_length=32, unique=True, db_index=True, help_text='A label for URL config.')
     title = models.CharField(max_length=64, default='Bruh, Change the Title')
     pub_date = models.DateTimeField('date published', auto_now_add=timezone.now())
-    secure_text = models.TextField(default="Please add Note Text")
+    secure_text = RichTextField(blank=True, null=True)  # models.TextField(default="Please add Note Text")
     data_dek = models.ManyToManyField(DEK, default=1, related_name='data_dek_public')
     data_kek = models.ManyToManyField(KEK, default=1, related_name='data_kek_public')
     result_nonce_text = models.CharField(max_length=128, default=b64encode(int(55).to_bytes(4, 'big')))

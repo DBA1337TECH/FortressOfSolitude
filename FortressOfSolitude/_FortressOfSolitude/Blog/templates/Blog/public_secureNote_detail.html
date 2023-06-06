@@ -35,13 +35,17 @@
           {{ post.pub_date|date:"l, F j, Y" }}
         </time>
         by
-       <!-- <a href="{{ post.author.get_absolute_url }}">
-          {{ post.author.username.name }} -->
+       <a href="{{ post.author.get_absolute_url }}">
+           1337_Tech</a>
+
       </p>
     </header>
+  <div class="writing">
     {% autoescape off %}
-        {% decrypt_public_text post %}
+
+        {% decrypt_public_text post|linebreaks|safe  %}
      {% endautoescape %}
+  </div>
   </div></div>
 
   {% if post.startups.all or post.tags.all %}

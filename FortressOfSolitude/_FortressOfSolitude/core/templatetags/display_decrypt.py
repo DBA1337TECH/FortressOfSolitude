@@ -6,6 +6,7 @@ Proof of Concept code, No liabilities or warranties expressed or implied.
 from _FortressOfSolitude.organizer.models import Gor_El
 from django.template import (
     Library, TemplateSyntaxError)
+from django.template.defaultfilters import stringfilter
 
 # https://docs.djangoproject.com/en/1.8/howto/custom-template-tags/
 
@@ -26,13 +27,28 @@ def decrypt_text(secure_note, context):
     secure_text = context['secureddataatrestpost']
     return gor_el._decrypt_text(secure_text, context)
 
+def new_line_strip(value):
+    # print(value)
+    return value.replace("\\r\\n", "\r\n")
+
+
+def render_without_bytes(value):
+    value.replace("b'", "")  # replace the byte string starter
+    # shave off the last character on return
+    return value[:-2]
+
 
 @register.simple_tag(name='decrypt_public_text', takes_context=True)
 def decrypt_public_text(context, secure_note):
     gor_el = Gor_El()
     secure_text = context['object']
     request = context['request']
-    return gor_el._decrypt_text(secure_text, request)
+    value = gor_el._decrypt_text(secure_text, request)
+    if value is None:
+        return value
+    else:
+        value = new_line_strip(value.decode())
+    return value
 
 
 @register.inclusion_tag(

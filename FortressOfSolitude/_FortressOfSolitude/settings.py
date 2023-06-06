@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     '_FortressOfSolitude.superhero',
     '_FortressOfSolitude.NeutrinoKey',
     '_FortressOfSolitude.core',
+    'ckeditor',
 ]
 DATABASE_ROUTERS = [
     '_FortressOfSolitude.NeutrinoKey.models.KryptonianSpeak'
