@@ -98,7 +98,7 @@
 
 .writing {
   color: #30bf47;
-  font-weight: bold;
+  font-weight: normal;
   font-family: 'Righteous', sans-serif;
     margin-left: 35px;
 }
@@ -108,8 +108,8 @@ a, a:visited, a:hover, a:active {
 }
 
 .writing article div div p {
-  font-family: 'Audiowide', cursive;
-  color: white;
+  font-family: 'Righteous', Sans-Serif;
+  color: lightseagreen;
 }
 
 .writing:before{
