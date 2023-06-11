@@ -47,6 +47,7 @@ class SecurePostUpdate(PostFormValidMixin, UpdateView):
 class PublicSecurePostUpdate(PostFormValidMixin, UpdateView):
     form_class = PublicSecurePostForm
     model = SecureDataAtRestPostPublic
+    context_object_name = "blog_securepost_public_update"
     template_name = 'Blog/public_secureNote_form_update.html'
 
 
@@ -75,6 +76,7 @@ class SecurePostDelete(SecurePostGetMixin, DeleteView):
     'Blog.delete_post')
 class PublicSecurePostDelete(SecurePostGetMixin, DeleteView):
     date_field = 'pub_date'
+    context_object_name = "blog_securepost_public_delete"
     model = SecureDataAtRestPostPublic
     template_name = 'blog/public_secureNote_confirm_delete.html'
     queryset = (
@@ -105,7 +107,7 @@ class SecurePostCreate(PostFormValidMixin, CreateView):
 class PublicSecurePostCreate(PostFormValidMixin, CreateView):
     form_class = PublicSecurePostForm
     model = SecureDataAtRestPostPublic
-    context_object_name = 'secureNote_public_create'
+    context_object_name = 'blog_securepost_public_create'
     template_name = 'Blog/secureNote_public_form.html'
 
 
@@ -187,7 +189,7 @@ class PublicSecurePostList(
     AllowFuturePermissionMixin,
     ArchiveIndexView):
     allow_empty = True
-    context_object_name = 'blog_secureNote_public_list'
+    context_object_name = 'blog_securepost_public_list'
     date_field = 'pub_date'
     make_object_list = True
     model = SecureDataAtRestPostPublic
@@ -244,7 +246,7 @@ class PublicSecurePostArchiveYear(
     AllowFuturePermissionMixin,
     YearArchiveView):
     allow_empty = True
-    context_object_name = 'public_securepost_archive_year'
+    context_object_name = 'blog_securepost_public_archive_year'
     date_field = 'pub_date'
     make_object_list = True
     model = SecureDataAtRestPostPublic
@@ -252,7 +254,8 @@ class PublicSecurePostArchiveYear(
     template_name = 'Blog/public_secureNote_archive_year.html'
 
 
-
+@require_authenticated_permission(
+    'Blog.view_post')
 class SecurePostArchiveMonth(
     AllowFuturePermissionMixin,
     MonthArchiveView):
@@ -272,5 +275,5 @@ class PublicSecurePostArchiveMonth(
     date_field = 'pub_date'
     month_format = '%m'
     paginate_by = 5
-    context_object_name = 'securepost_public_archive_month'
+    context_object_name = 'blog_securepost_public_archive_month'
     template_name = 'Blog/public_secureNote_archive_month.html'

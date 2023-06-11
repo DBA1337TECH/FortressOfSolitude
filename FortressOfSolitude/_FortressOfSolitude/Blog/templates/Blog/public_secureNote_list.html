@@ -15,7 +15,7 @@
             </a>
         </div>
         {% endif %}
-        {% for post in public_securepost_list %}
+        {% for post in blog_securepost_public_list %}
         <article class="list-item">
             <header>
                 <h2>
@@ -62,14 +62,14 @@
             </p>
         </article>
         {% empty %}
-        <p><em>No Secure Blog Posts Available</em></p>
+        <p><em>No Secure Public Blog Posts Available</em></p>
         {% endfor %}
     </div><!-- eight columns -->
     <div class="desktop four columns">
         {% if perms.blog.add_post %}
         <a href="{% url 'blog_securepost_public_create' %}"
            class="button button-primary">
-            Write New Secure Blog Post
+            Write New Secure Public Blog Post
         </a>
         {% endif %}
         <h3>Post Archives</h3>

@@ -2,9 +2,9 @@
 {% load display_form %}
 
 {% block title %}
-{{ block.super }} - Update SecureNotesPublic
+{{ block.super }} - Update PublicSecureNotes
 {% endblock %}
 
 {% block content %}
-  {% form post.get_update_url 'Update PublicSecureNote' %}
+  {% form post.get_update_url 'Update Public Blog Post' %}
 {% endblock %}

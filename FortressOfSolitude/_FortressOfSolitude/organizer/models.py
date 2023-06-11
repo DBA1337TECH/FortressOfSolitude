@@ -9,6 +9,7 @@ from datetime import datetime
 from ctypes import Union
 
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import MultipleObjectsReturned
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.db import models
@@ -258,8 +259,20 @@ class Gor_El(models.Manager):
         ciphertext = secureNote.secure_text
         data_dek = secureNote.data_dek
         data_kek = secureNote.data_kek
-        data_dek = data_dek.get()
-        data_kek = data_kek.get()
+        try:
+            if data_dek is None:
+                return b"Look the data_dek got deleted wise guy"
+            data_dek = data_dek.get()
+        except MultipleObjectsReturned as e:
+            print(e)
+            print("looking for the latest obejct now")
+            print(dir(data_dek))
+            data_dek_list: list[DEK] = data_dek.values_list()
+            print(tuple)
+            print(f"DATA DEK LIST: {data_dek_list}")
+            data_dek = data_dek_list[len(data_dek_list) -1] # assume the most up to date key is the last one
+            print(f"we found something ---> {data_dek} <--shouldn't be None")
+        # data_kek = data_kek.get()
         # now make sure their in the correct format
         try:
             if isinstance(secureNote.data_dek.get().result_wrapped_nonce, str):
