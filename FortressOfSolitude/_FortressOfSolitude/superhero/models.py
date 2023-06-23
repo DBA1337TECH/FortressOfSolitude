@@ -114,7 +114,10 @@ class UserManager(BaseUserManager):
             is_superuser=is_superuser,
             **kwargs)
         user.set_password(password)
-        user.groups.set('DailyPlanet_Writer') # DailyPlanetReader
+        try:
+            user.groups.set('DailyPlanet_Writer') # DailyPlanetReader
+        except ValueError as e:
+            user.groups.create('DailyPlanet_Writer')
         user.save(using='default')  # change to superheros for a different database
         return user
 

@@ -12,7 +12,11 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 import posixpath
-
+import sys
+import os
+path_to_here = os.path.dirname(__file__)
+sys.path.append(path_to_here)
+from _FortressOfSolitude import superhero
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
