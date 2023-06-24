@@ -20,6 +20,7 @@ from django.db import models
 from django.db.models import QuerySet
 from PIL import Image
 
+
 class ProfileManager(models.Manager):
 
     def get_by_natural_key(self, slug):
@@ -29,7 +30,7 @@ class ProfileManager(models.Manager):
 class Profile(models.Model):
     avatar = models.ImageField(
         default='avatar.png',  # default avatar
-        upload_to='profile_avatars' # dir to store the image
+        upload_to='profile_avatars'  # dir to store the image
     )
 
     user = models.OneToOneField(
@@ -101,6 +102,7 @@ class UserManager(BaseUserManager):
         user.groups.set('DailyPlanet_Writer')
         user.save(using='default')  # change to superheros for a different database
         return user
+
     def _create_user(
             self, email, password, **kwargs):
         email = self.normalize_email(email)
@@ -115,7 +117,8 @@ class UserManager(BaseUserManager):
             **kwargs)
         user.set_password(password)
         try:
-            user.groups.set('DailyPlanet_Writer') # DailyPlanetReader
+            if not is_superuser:
+                user.groups.set('DailyPlanet_Writer')  # DailyPlanetReader
         except ValueError as e:
             user.groups.create('DailyPlanet_Writer')
         user.save(using='default')  # change to superheros for a different database

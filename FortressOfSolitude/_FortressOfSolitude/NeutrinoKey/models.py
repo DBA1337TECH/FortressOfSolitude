@@ -509,7 +509,7 @@ class NeutronMatterCollector(models.Model):
                                  result_wrapped_nonce=b64encode(crypto.nonce), id=self.id)
                     # newDek.kek_to_retrieve.set(self.dekgenerator)
                     # self.time_generated = models.DateTimeField('date integrated', auto_now_add=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                    self.save()
+                    # self.save()
                     newDek.save()
                     self.dekgenerator.set((newDek.dek,))
                     self.save()
