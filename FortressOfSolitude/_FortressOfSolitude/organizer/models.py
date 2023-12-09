@@ -18,6 +18,7 @@ from django.utils import timezone
 
 import _FortressOfSolitude.settings as settings
 from _FortressOfSolitude.NeutrinoKey.cryptoutils import CryptoTools
+from _FortressOfSolitude.NeutrinoKey.models import secure_erase_bytes, secure_erase
 from _FortressOfSolitude.NeutrinoKey.models import DEK, KEK, NeutronMatterCollector, NeutronCore, DeriveDek_default, \
     DeriveDek_from_Kek
 
@@ -347,7 +348,11 @@ class Gor_El(models.Manager):
             plaintext = data_dek.crypto.AesDecryptEAX(ciphertext, CryptoTools().Sha256(key))
         else:
             plaintext = self.crypt.AesDecryptEAX(ciphertext, data_dek)
-
+        print("securely erasing the keyToFile in memory")
+        key = secure_erase_bytes(key)
+        print("erased keyToFile in memory")
+        print(f"key: {key}")
+        del key
         return plaintext
 
     def _decrypt_data(self, password, **kwargs):
@@ -395,6 +400,9 @@ class Gor_El(models.Manager):
 
             self.crypt.nonce = b64decode(wrapped_nonce)
             plaintext = self.crypt.AesDecryptEAX(encryptedFile, CryptoTools().Sha256(keyToFile))
+            print("securely erasing the keyToFile in memory")
+            secure_erase_bytes(keyToFile)
+            print("erased keyToFile in memory")
             return plaintext
 
         else:
