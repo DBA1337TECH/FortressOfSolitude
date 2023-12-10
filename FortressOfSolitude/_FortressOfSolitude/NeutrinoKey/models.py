@@ -612,9 +612,18 @@ class RSAKey(models.Model):
 
     wrapped_private_key = models.BinaryField()
     wrapped_public_key = models.BinaryField()
+    keys_kek = KEK()
+    private_key_dek = DEK()
+    public_key_dek = DEK()
+
+    crypto: CryptoTools = CryptoTools()
 
     @classmethod
-    def generate_key_pair(cls):
+    def generate_key_pair(cls, password):
+        """
+        generates and returns the wrapped public and private keys of RSA that can be decrypted
+        with the Password and KEK combination
+        """
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=4096,
@@ -632,7 +641,28 @@ class RSAKey(models.Model):
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        rsa_key_pair = cls.objects.create(private_key=private_key_bytes, public_key=public_key_bytes)
+        key_encryption_key = DeriveKek_default(password)
+        privy_dek = DeriveDek_from_Kek(key_encryption_key, password)
+        pub_dek = DeriveDek_from_Kek(key_encryption_key, password)
+
+        wrapped_priv_bytes = cls.crypto.AesEncryptEAX(private_key_bytes, privy_dek.dek)
+        wrapped_pub_bytes = cls.crypto.AesEncryptEAX(public_key_bytes, pub_dek.dek)
+
+        rsa_key_pair = cls.objects.create(private_key=wrapped_priv_bytes,
+                                          public_key=wrapped_pub_bytes,
+                                          keys_kek=key_encryption_key,
+                                          wrapped_public_key=wrapped_pub_bytes,
+                                          wrapped_private_key=wrapped_priv_bytes,
+                                          private_key_dek=privy_dek,
+                                          public_key_dek=pub_dek,
+                                          )
+        privy_dek.wrap_key(key_encryption_key, password)
+        pub_dek.wrap_key(key_encryption_key, password)
+        key_encryption_key.wrap_key(password)
+        secure_erase_bytes(private_key_bytes)
+        secure_erase_bytes(public_key_bytes)
+
+        cls.save()
         return rsa_key_pair
 
     def encrypt_data(self, plaintext):
