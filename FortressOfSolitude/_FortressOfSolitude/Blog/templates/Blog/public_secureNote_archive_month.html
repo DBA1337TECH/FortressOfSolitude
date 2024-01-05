@@ -10,13 +10,13 @@
     <div class="mobile">
       {% if perms.blog.add_post %}
         <a
-          href="{% url 'blog_public_securepost_create' %}"
+          href="{% url 'blog_securepost_public_create' %}"
           class="button button-primary">
         Write New Blog Post</a>
       {% endif %}
     </div>
     <h2>All Posts for {{ month|date:"F Y" }}</h2>
-    {% for post in public_securepost_archive_month %}
+    {% for post in blog_securepost_public_archive_month %}
       <article class="list-item">
         <header>
           <h3>
@@ -61,11 +61,11 @@
   <div class="desktop four columns">
     {% if perms.blog.add_post %}
       <a
-        href="{% url 'blog_public_securepost_create' %}"
+        href="{% url 'blog_securepost_public_create' %}"
         class="button button-primary">
       Write New Blog Post</a>
     {% endif %}
-    <p><a href="{% url 'blog_securepost_public__archive_year' month|date:"Y" %}">
+    <p><a href="{% url 'blog_securepost_public_archive_year' month|date:"Y" %}">
       All Posts from {{ month|date:"Y" }}</a></p>
     <p><a href="{% url 'blog_securepost_public_list' %}">
       Latest Posts</a></p>

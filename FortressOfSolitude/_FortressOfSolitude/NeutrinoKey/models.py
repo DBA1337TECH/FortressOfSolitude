@@ -1,18 +1,27 @@
 """
-DBA 1337_TECH, AUSTIN TEXAS © MAY 2020
+DBA 1337_TECH, AUSTIN TEXAS © DECEMBER 2023
 Proof of Concept code, No liabilities or warranties expressed or implied.
 """
 
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import os
+from base64 import b64encode, b64decode
+from datetime import datetime
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from datetime import datetime
 from .cryptoutils import CryptoTools
-from base64 import b64encode, b64decode
-from django.contrib.auth import get_user_model
-from random import random
+import secrets
 
 # Create your models here.
 
@@ -135,11 +144,13 @@ class KEK(models.Model):
         if isinstance(password, str) and self.kek == None:
             self.kek = self.crypto.AesEncryptEAX(data, self.crypto.Sha256(password.encode()))
             self.wrappedKek = self.kek
+            secure_erase_bytes(self.kek)
             self.kek = None
 
         elif isinstance(password, bytes) and self.kek == None:
             self.kek = self.crypto.AesEncryptEAX(data, self.crypto.Sha256(password))
             self.wrappedKek = b64encode(self.kek)
+            secure_erase_bytes(self.kek)
             self.kek = None
         elif self.kek != None:
             try:
@@ -149,7 +160,9 @@ class KEK(models.Model):
                 else:
                     self.wrappedKek = b64encode(
                         self.crypto.AesEncryptEAX(self.kek, self.crypto.Sha256(password.encode())))
-
+                print("about to securely erase")
+                secure_erase_bytes(self.kek)
+                print("secureley erased")
                 self.kek = None
             except OSError as ERROR:
                 print('Wrapping KEK (key encryption key) was unsuccessful')
@@ -535,3 +548,186 @@ class KryptonianSpeak:
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         return True
+
+
+"""
+Key Manager for AES keys and RSA keys and ECC keys
+"""
+
+
+# models.py
+class AESKey(models.Model):
+    key = models.BinaryField()
+    salt = models.BinaryField()
+
+    @classmethod
+    def generate_key(cls, password):
+        salt = os.urandom(32)  # Use a 32-byte salt for AES-256
+        key = cls.derive_key(password, salt)
+
+        # Store the key and salt securely (e.g., using an HSM or encrypted storage)
+        aes_key = cls.objects.create(key=key, salt=salt)
+        return aes_key
+
+    def encrypt_data(self, plaintext):
+        cipher = Cipher(algorithms.AES(self.key), modes.CFB(self.key[:16]), backend=default_backend())
+        encryptor = cipher.encryptor()
+
+        # Apply PKCS7 padding
+        padder = padding.PKCS7(128).padder()
+        plaintext_padded = padder.update(plaintext) + padder.finalize()
+
+        ciphertext = encryptor.update(plaintext_padded) + encryptor.finalize()
+        return ciphertext
+
+    def decrypt_data(self, ciphertext):
+        cipher = Cipher(algorithms.AES(self.key), modes.CFB(self.key[:16]), backend=default_backend())
+        decryptor = cipher.decryptor()
+
+        # Decrypt and then remove PKCS7 padding
+        decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
+        unpadder = padding.PKCS7(128).unpadder()
+        plaintext = unpadder.update(decrypted_data) + unpadder.finalize()
+        return plaintext
+
+    @staticmethod
+    def derive_key(password, salt):
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,  # AES-256 requires a 256-bit key
+            salt=salt,
+            iterations=100000,  # Adjust as needed
+            backend=default_backend()
+        )
+        key = kdf.derive(password.encode())
+        return key
+
+
+# models.py
+
+
+class RSAKey(models.Model):
+    private_key = models.BinaryField()  # need to wrap appropriately
+    public_key = models.BinaryField()  # need to wrap appropriately
+
+    wrapped_private_key = models.BinaryField()
+    wrapped_public_key = models.BinaryField()
+    keys_kek = KEK()
+    private_key_dek = DEK()
+    public_key_dek = DEK()
+
+    crypto: CryptoTools = CryptoTools()
+
+    @classmethod
+    def generate_key_pair(cls, password):
+        """
+        generates and returns the wrapped public and private keys of RSA that can be decrypted
+        with the Password and KEK combination
+        """
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=4096,
+            backend=default_backend()
+        )
+
+        private_key_bytes = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
+        public_key_bytes = private_key.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+
+        key_encryption_key = DeriveKek_default(password)
+        privy_dek = DeriveDek_from_Kek(key_encryption_key, password)
+        pub_dek = DeriveDek_from_Kek(key_encryption_key, password)
+
+        wrapped_priv_bytes = cls.crypto.AesEncryptEAX(private_key_bytes, privy_dek.dek)
+        wrapped_pub_bytes = cls.crypto.AesEncryptEAX(public_key_bytes, pub_dek.dek)
+
+        rsa_key_pair = cls.objects.create(private_key=wrapped_priv_bytes,
+                                          public_key=wrapped_pub_bytes,
+                                          keys_kek=key_encryption_key,
+                                          wrapped_public_key=wrapped_pub_bytes,
+                                          wrapped_private_key=wrapped_priv_bytes,
+                                          private_key_dek=privy_dek,
+                                          public_key_dek=pub_dek,
+                                          )
+        privy_dek.wrap_key(key_encryption_key, password)
+        pub_dek.wrap_key(key_encryption_key, password)
+        key_encryption_key.wrap_key(password)
+        secure_erase_bytes(private_key_bytes)
+        secure_erase_bytes(public_key_bytes)
+
+        cls.save()
+        return rsa_key_pair
+
+    def encrypt_data(self, plaintext):
+        public_key = serialization.load_pem_public_key(
+            self.public_key,
+            backend=default_backend()
+        )
+
+        ciphertext = public_key.encrypt(
+            plaintext.encode(),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        return ciphertext
+
+    def decrypt_data(self, ciphertext):
+        private_key = serialization.load_pem_private_key(
+            self.private_key,
+            password=None,
+            backend=default_backend()
+        )
+
+        plaintext = private_key.decrypt(
+            ciphertext,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        return plaintext.decode()
+
+
+def secure_erase_bytes(bytes_data) -> bytes:
+    bytes_data = bytearray(bytes_data)
+    bytes_data = secure_erase(bytes_data)
+    print(bytes_data)
+    return bytes_data
+
+
+def secure_erase(byte_data) -> bytes:
+    """
+    Securely erases the provided bytearray by filling it with random values.
+    """
+    byte_length = len(byte_data)
+
+    # Generate random bytes using secrets.token_bytes
+    random_bytes = secrets.token_bytes(byte_length)
+
+    # Overwrite the original bytearray with random bytes
+    for i in range(byte_length):
+        byte_data[i] = random_bytes[i]
+
+    # now set them to zero to ensure they key is no longer there.
+    for i in range(byte_length):
+        byte_data[i] = 0
+    print(byte_data)
+    return bytes(byte_data)
+
+# Example usage of secure_erase:
+# data_to_erase = bytearray(b"Sensitive Data")
+# secure_erase(data_to_erase)
+# print("Erased Data:", data_to_erase)
