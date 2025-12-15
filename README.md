@@ -9,17 +9,17 @@ Key Manager Practices for Organizations (https://www.nist.gov/publications/recom
 and does not meet all the requirments due to the implementation is currently creating a new KEK->DEK->256BitKey for every file and Secure Note that is marked for encryption.
 
 
-+-+-+-+-+-+-+-+-
-| DEK            |------------------------Generated_KEY (256 bits)
-+-+-+-+-+-+-+-+- |
-|
-+-+-+-+-+-+-+-+- |
-| KEK            |------------|
-+-+-+-+-+-+-+-+- |
-|
-+-+-+-+-+-+-+-+- |
-| SALT           |-----|
-+-+-+-+-+-+-+-+-
+    +-+-+-+-+-+-+-+-
+    | DEK            |------------------------Generated_KEY (256 bits)
+    +-+-+-+-+-+-+-+- |
+    |
+    +-+-+-+-+-+-+-+- |
+    | KEK            |------------|
+    +-+-+-+-+-+-+-+- |
+    |
+    +-+-+-+-+-+-+-+- |
+    | SALT           |-----|
+    +-+-+-+-+-+-+-+-
 
 Where the SALT is a random number that will be preprended to the KEK (Key Encryption Key) which is the derived DEK (Data Encryption Key)
 
@@ -33,35 +33,32 @@ This is a work in progress but here are the steps so far:
 
 ` cd FortressOfSolitude `
 
-    Before Moving forward be sure to look over the settings.py file
-    to ensure it is up to par with your needs (default passwords have been changed, etc.).
+Before Moving forward be sure to look over the settings.py file
+to ensure it is up to par with your needs (default passwords have been changed, etc.).
 
 ` python3 manage.py makemigrations `
 
-    The above step creates a db.sqlite3 please 
-    for the love of all that is Holy make sure to 
-    update your Password for the Database in the settings.
+The above step creates a db.sqlite3 please 
+for the love of all that is Holy make sure to 
+update your Password for the Database in the settings.
 
 ` python3 manage.py migrate `
     
 
 ` python3 manage.py createsuperuser `
 
-    You will fill out an email and password for your account, 
-    remember the password is what wraps your keys so make sure 
-    its secure (long enough) for your needs.
+You will fill out an email and password for your account, 
+remember the password is what wraps your keys so make sure 
+its secure (long enough) for your needs.
     
 ` python3 manage.py runserver `
 
-    This will open a default server at http://127.0.0.1:8000
+This will open a default server at http://127.0.0.1:8000
     
     To get to most of the features such as the encrypted Notes (Secure Notes) you will need to manually traverse to http://127.0.0.1:8000/blog
     
-![Not_So_Landing_Page](https://user-images.githubusercontent.com/33583381/127745834-4f2714fb-8fbc-4955-8b32-6a0f14bc6f6d.PNG)
+![Not_So_Landing_Page](./FortressOfSolitudeLoginSplash.png)
 
-    Secure Notes after creating a tag, tasking, and uploading a file successfully
     
-<img width="1306" alt="SecureNotes_List" src="https://user-images.githubusercontent.com/33583381/127792135-7f20eb4a-8092-4fda-ab28-5a8444f20422.png">
 
-<img width="1307" alt="SecureMessage_decrypted" src="https://user-images.githubusercontent.com/33583381/127792173-02146348-020f-4577-a077-1c7419e35ae0.png">
 
